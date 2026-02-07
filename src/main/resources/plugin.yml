@@ -1,0 +1,30 @@
+name: AtomSMPFixer
+version: '${project.version}'
+main: com.atomsmp.fixer.AtomSMPFixer
+api-version: '1.21'
+description: "Gelişmiş exploit düzeltme ve sunucu koruma plugini"
+author: AtomSMP
+website: "https://atomsmp.com"
+depend:
+  - packetevents
+
+commands:
+  atomfix:
+    description: "AtomSMPFixer ana komutu"
+    usage: "/<command> [reload|status|toggle|info]"
+    permission: atomsmpfixer.admin
+    aliases: [af, atomsmpfixer]
+
+permissions:
+  atomsmpfixer.admin:
+    description: "Tüm AtomSMPFixer komutlarına erişim"
+    default: op
+  atomsmpfixer.bypass:
+    description: "Tüm exploit kontrollerini atla"
+    default: false
+  atomsmpfixer.reload:
+    description: "Config yeniden yükleme izni"
+    default: op
+  atomsmpfixer.notify:
+    description: "Exploit bildirimlerini alma izni"
+    default: op
