@@ -106,7 +106,9 @@ public class PacketListener extends PacketListenerAbstract {
      * @param event Paket alma eventi
      */
     private void handleIncomingPacket(@NotNull PacketReceiveEvent event) {
-        PacketType.Play.Client packetType = (PacketType.Play.Client) event.getPacketType();
+        if (!(event.getPacketType() instanceof PacketType.Play.Client packetType)) {
+            return;
+        }
 
         // Burada modül sistemi genişletildiğinde,
         // her modül kendi paket türünü handle edebilir
@@ -126,7 +128,9 @@ public class PacketListener extends PacketListenerAbstract {
      * @param event Paket gönderme eventi
      */
     private void handleOutgoingPacket(@NotNull PacketSendEvent event) {
-        PacketType.Play.Server packetType = (PacketType.Play.Server) event.getPacketType();
+        if (!(event.getPacketType() instanceof PacketType.Play.Server packetType)) {
+            return;
+        }
 
         // Giden paketler için özel işlemler
         // Örneğin chunk paketlerini izleme, vb.
