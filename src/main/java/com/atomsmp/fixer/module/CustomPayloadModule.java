@@ -138,8 +138,7 @@ public class CustomPayloadModule extends AbstractModule {
             return;
         }
 
-        Player player = (Player) event.getPlayer();
-        if (player == null) {
+        if (!(event.getPlayer() instanceof Player player)) {
             return;
         }
 

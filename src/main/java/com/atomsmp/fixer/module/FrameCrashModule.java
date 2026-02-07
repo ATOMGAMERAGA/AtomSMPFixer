@@ -172,10 +172,15 @@ public class FrameCrashModule extends AbstractModule implements Listener {
     }
 
     /**
-     * Memory optimization - kullanılmayan chunk kayıtlarını temizler
+     * Memory optimization - yüklü olmayan chunk kayıtlarını temizler
      */
     public void cleanup() {
-        frameCounts.entrySet().removeIf(entry -> entry.getValue().get() <= 0);
+        frameCounts.entrySet().removeIf(entry -> {
+            ChunkKey key = entry.getKey();
+            org.bukkit.World world = plugin.getServer().getWorld(key.worldName);
+            // Dünya yoksa veya chunk yüklü değilse kaldır
+            return world == null || !world.isChunkLoaded(key.x, key.z);
+        });
     }
 
     /**

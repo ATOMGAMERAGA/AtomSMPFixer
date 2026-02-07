@@ -56,24 +56,17 @@ public class MessageManager {
      */
     @NotNull
     public Component getMessage(@NotNull String path) {
-        // Cache'de varsa direkt döndür
-        if (messageCache.containsKey(path)) {
-            return messageCache.get(path);
-        }
+        // Atomik cache lookup - computeIfAbsent ile race condition önlenir
+        return messageCache.computeIfAbsent(path, key -> {
+            // Config'den mesajı al
+            String message = plugin.getConfigManager().getMessage(key);
+            if (message == null || message.isEmpty()) {
+                message = "<red>Mesaj bulunamadı: " + key;
+            }
 
-        // Config'den mesajı al
-        String message = plugin.getConfigManager().getMessage(path);
-        if (message == null || message.isEmpty()) {
-            message = "<red>Mesaj bulunamadı: " + path;
-        }
-
-        // MiniMessage ile parse et
-        Component component = miniMessage.deserialize(message);
-
-        // Cache'e ekle
-        messageCache.put(path, component);
-
-        return component;
+            // MiniMessage ile parse et
+            return miniMessage.deserialize(message);
+        });
     }
 
     /**

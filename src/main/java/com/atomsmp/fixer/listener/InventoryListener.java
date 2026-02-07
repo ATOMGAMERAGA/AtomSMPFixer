@@ -35,7 +35,7 @@ public class InventoryListener implements Listener {
      *
      * @param event Envanter açılma eventi
      */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryOpen(@NotNull InventoryOpenEvent event) {
         if (!(event.getPlayer() instanceof Player player)) {
             return;
@@ -60,7 +60,7 @@ public class InventoryListener implements Listener {
      *
      * @param event Envanter kapanma eventi
      */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryClose(@NotNull InventoryCloseEvent event) {
         if (!(event.getPlayer() instanceof Player player)) {
             return;

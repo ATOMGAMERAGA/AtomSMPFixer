@@ -120,6 +120,7 @@ public class MuleDuplicationModule extends AbstractModule implements Listener {
 
             event.setCancelled(true);
             debug(player.getName() + " için etkileşim engellendi (ölü entity)");
+            return;
         }
     }
 

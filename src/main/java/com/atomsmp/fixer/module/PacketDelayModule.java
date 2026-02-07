@@ -108,8 +108,8 @@ public class PacketDelayModule extends AbstractModule {
             return;
         }
 
-        Player player = (Player) event.getPlayer();
-        if (player == null) {
+        // Login/Handshake aşamasında player henüz Bukkit Player değil, ClassCastException önleme
+        if (!(event.getPlayer() instanceof Player player)) {
             return;
         }
 

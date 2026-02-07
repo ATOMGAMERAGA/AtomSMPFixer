@@ -4,6 +4,7 @@ import com.atomsmp.fixer.AtomSMPFixer;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -108,17 +109,31 @@ public class OfflinePacketModule extends AbstractModule {
             return;
         }
 
+        // Sadece Play aşamasındaki paketleri kontrol et
+        // Login/Handshake aşamasındaki paketleri atla - bu aşamada oyuncu henüz Bukkit'e kayıtlı değil
+        if (!(event.getPacketType() instanceof PacketType.Play.Client)) {
+            return;
+        }
+
         Object playerObj = event.getPlayer();
         if (!(playerObj instanceof Player player)) {
-            // Oyuncu bulunamadı
-            debug("Paket alındı ama oyuncu bulunamadı");
             return;
         }
 
         UUID uuid = player.getUniqueId();
 
-        // Login time kaydı yoksa ekle
+        // Login time kaydı yoksa ekle (ilk Play paketi geldiğinde)
         loginTimes.putIfAbsent(uuid, System.currentTimeMillis());
+
+        // Grace period kontrolü - yeni giriş yapan oyuncuları engelleme
+        Long loginTime = loginTimes.get(uuid);
+        if (loginTime != null) {
+            long timeSinceLogin = System.currentTimeMillis() - loginTime;
+            if (timeSinceLogin < toleranceMs) {
+                debug(player.getName() + " grace period içinde (" + timeSinceLogin + "ms)");
+                return;
+            }
+        }
 
         // Oyuncunun online olup olmadığını kontrol et
         Player onlinePlayer = Bukkit.getPlayer(uuid);
@@ -131,16 +146,6 @@ public class OfflinePacketModule extends AbstractModule {
 
             event.setCancelled(true);
             debug(player.getName() + " için paket engellendi (çevrimdışı)");
-            return;
-        }
-
-        // Grace period kontrolü (yeni login olan oyuncular için)
-        long loginTime = loginTimes.get(uuid);
-        long timeSinceLogin = System.currentTimeMillis() - loginTime;
-
-        if (timeSinceLogin < toleranceMs) {
-            // Grace period içinde, normal işlem
-            debug(player.getName() + " grace period içinde (" + timeSinceLogin + "ms)");
         }
     }
 

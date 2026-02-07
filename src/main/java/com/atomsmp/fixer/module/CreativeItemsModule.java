@@ -196,7 +196,7 @@ public class CreativeItemsModule extends AbstractModule implements Listener {
         // Enchantment seviyesi kontrolü
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
-            if (meta.hasEnchants()) {
+            if (meta != null && meta.hasEnchants()) {
                 for (var entry : meta.getEnchants().entrySet()) {
                     Enchantment enchant = entry.getKey();
                     int level = entry.getValue();

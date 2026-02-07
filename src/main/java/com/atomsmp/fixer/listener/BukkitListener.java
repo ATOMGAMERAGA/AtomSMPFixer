@@ -1,6 +1,9 @@
 package com.atomsmp.fixer.listener;
 
 import com.atomsmp.fixer.AtomSMPFixer;
+import com.atomsmp.fixer.module.OfflinePacketModule;
+import com.atomsmp.fixer.module.PacketDelayModule;
+import com.atomsmp.fixer.module.PacketExploitModule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,8 +46,11 @@ public class BukkitListener implements Listener {
             plugin.getLogManager().debug("Oyuncu katıldı: " + player.getName());
         }
 
-        // PlayerData oluşturma gibi işlemler
-        // Modüller eklendiğinde buraya eklenecek
+        // OfflinePacketModule'e login bildirimi
+        OfflinePacketModule offlineModule = plugin.getModuleManager().getModule(OfflinePacketModule.class);
+        if (offlineModule != null) {
+            offlineModule.onPlayerLogin(player.getUniqueId());
+        }
     }
 
     /**
@@ -61,7 +67,20 @@ public class BukkitListener implements Listener {
             plugin.getLogManager().debug("Oyuncu ayrıldı: " + player.getName());
         }
 
-        // PlayerData temizleme gibi işlemler
-        // Modüller eklendiğinde buraya eklenecek
+        // Modüllere oyuncu çıkış bildirimi - veri temizleme
+        OfflinePacketModule offlineModule = plugin.getModuleManager().getModule(OfflinePacketModule.class);
+        if (offlineModule != null) {
+            offlineModule.onPlayerLogout(player.getUniqueId());
+        }
+
+        PacketDelayModule delayModule = plugin.getModuleManager().getModule(PacketDelayModule.class);
+        if (delayModule != null) {
+            delayModule.removePlayerData(player.getUniqueId());
+        }
+
+        PacketExploitModule exploitModule = plugin.getModuleManager().getModule(PacketExploitModule.class);
+        if (exploitModule != null) {
+            exploitModule.removePlayerData(player.getUniqueId());
+        }
     }
 }

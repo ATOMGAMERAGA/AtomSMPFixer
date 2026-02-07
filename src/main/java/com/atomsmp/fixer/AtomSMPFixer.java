@@ -82,6 +82,9 @@ public final class AtomSMPFixer extends JavaPlugin {
         // PacketEvents'i başlat
         PacketEvents.getAPI().init();
 
+        // Periyodik temizlik görevi (bellek sızıntısı önleme) - her 5 dakikada bir
+        startCleanupTask();
+
         // Başarı mesajı
         long loadTime = System.currentTimeMillis() - startTime;
         getLogger().info("╔════════════════════════════════════════╗");
@@ -181,6 +184,35 @@ public final class AtomSMPFixer extends JavaPlugin {
         getCommand("atomfix").setTabCompleter(tabCompleter);
 
         getLogger().info("Komutlar kaydedildi.");
+    }
+
+    /**
+     * Periyodik temizlik görevini başlatır
+     * Modüllerin cleanup() metodlarını çağırarak bellek sızıntısını önler
+     */
+    private void startCleanupTask() {
+        // Her 5 dakikada bir (6000 tick) cleanup çalıştır
+        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            try {
+                var offlineModule = moduleManager.getModule(com.atomsmp.fixer.module.OfflinePacketModule.class);
+                if (offlineModule != null) offlineModule.cleanup();
+
+                var exploitModule = moduleManager.getModule(com.atomsmp.fixer.module.PacketExploitModule.class);
+                if (exploitModule != null) exploitModule.cleanup();
+
+                // FrameCrashModule.cleanup() Bukkit API kullanıyor, sync olmalı
+                getServer().getScheduler().runTask(this, () -> {
+                    var frameModule = moduleManager.getModule(com.atomsmp.fixer.module.FrameCrashModule.class);
+                    if (frameModule != null) frameModule.cleanup();
+                });
+
+                var invModule = moduleManager.getModule(com.atomsmp.fixer.module.InventoryDuplicationModule.class);
+                if (invModule != null) invModule.cleanup();
+
+            } catch (Exception e) {
+                getLogger().warning("Cleanup görevi sırasında hata: " + e.getMessage());
+            }
+        }, 6000L, 6000L);
     }
 
     /**

@@ -99,8 +99,8 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
         UUID uuid = player.getUniqueId();
 
         // Oyuncunun envanteri açık mı kontrol et
-        if (openInventories.containsKey(uuid)) {
-            long openTime = openInventories.get(uuid);
+        Long openTime = openInventories.get(uuid);
+        if (openTime != null) {
             long timeSinceOpen = System.currentTimeMillis() - openTime;
 
             // 50ms içinde blok kırma = şüpheli

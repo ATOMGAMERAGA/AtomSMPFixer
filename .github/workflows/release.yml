@@ -146,17 +146,17 @@ jobs:
           echo "Release notes oluşturuldu"
 
       - name: GitHub Release oluştur
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: AtomSMPFixer ${{ steps.version.outputs.tag }}
           body_path: release_notes.md
           draft: false
           prerelease: false
+          make_latest: true
           files: |
             target/AtomSMPFixer-${{ steps.version.outputs.version }}.jar
             target/AtomSMPFixer-${{ steps.version.outputs.version }}.jar.sha256
-          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
