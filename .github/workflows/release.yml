@@ -1,0 +1,171 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # v1.0.0, v1.0.1, v2.0.0 gibi tag'lerde tetiklenir
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kod
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Java 21 kurulumu
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Versiyon bilgisini al
+        id: version
+        run: |
+          # Tag'den version numarasını al (v1.0.0 -> 1.0.0)
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: pom.xml versiyonunu güncelle
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          mvn versions:set -DnewVersion=$VERSION -DgenerateBackupPoms=false
+
+      - name: Maven ile build
+        run: mvn clean package -DskipTests
+
+      - name: JAR dosyasını doğrula
+        run: |
+          if [ ! -f target/AtomSMPFixer-${{ steps.version.outputs.version }}.jar ]; then
+            echo "❌ JAR dosyası bulunamadı!"
+            ls -la target/
+            exit 1
+          fi
+          echo "✅ JAR dosyası başarıyla oluşturuldu"
+          ls -lh target/AtomSMPFixer-${{ steps.version.outputs.version }}.jar
+
+      - name: SHA256 checksum oluştur
+        run: |
+          cd target
+          sha256sum AtomSMPFixer-${{ steps.version.outputs.version }}.jar > AtomSMPFixer-${{ steps.version.outputs.version }}.jar.sha256
+          cat AtomSMPFixer-${{ steps.version.outputs.version }}.jar.sha256
+
+      - name: Release notes oluştur
+        id: release_notes
+        run: |
+          cat > release_notes.md << 'EOF'
+          # 🎯 AtomSMPFixer ${{ steps.version.outputs.tag }}
+
+          ## 📦 İndirme
+
+          **Paper 1.21.4** için geliştirilmiş kapsamlı exploit fixer plugin'i.
+
+          ### Gereksinimler
+          - ☕ Java 21+
+          - 📄 Paper 1.21.4
+          - 📡 PacketEvents 2.6.0+
+
+          ### Kurulum
+          1. `AtomSMPFixer-${{ steps.version.outputs.version }}.jar` dosyasını indirin
+          2. Sunucunuzun `plugins/` klasörüne kopyalayın
+          3. [PacketEvents](https://modrinth.com/plugin/packetevents) plugin'ini kurun
+          4. Sunucuyu başlatın
+
+          ## ✨ Özellikler
+
+          - 🛡️ **21 Exploit Fixer Modülü**
+          - 📊 **Gelişmiş Paket Kontrolü** (PacketEvents)
+          - 🚀 **Ultra-Performanslı** (Thread-safe, async)
+          - 🇹🇷 **Türkçe Arayüz** (MiniMessage desteği)
+          - 📝 **Async Log Sistemi**
+          - ⚙️ **Modül Bazlı Konfigürasyon**
+          - 🔄 **Hot-Reload Desteği**
+
+          ## 🛡️ Modüller
+
+          ✅ TooManyBooks (Chunk Crasher/Dupe)
+          ✅ PacketDelay (Bundle Dupe)
+          ✅ PacketExploit (Netty Crasher)
+          ✅ CustomPayload
+          ✅ CommandsCrash
+          ✅ CreativeItems (World Crasher)
+          ✅ SignCrasher (World Crasher)
+          ✅ LecternCrasher
+          ✅ MapLabelCrasher
+          ✅ InvalidSlot
+          ✅ NBTCrasher
+          ✅ BookCrasher
+          ✅ CowDuplication
+          ✅ DispenserCrasher
+          ✅ OfflinePacket
+          ✅ InventoryDuplication
+          ✅ MuleDuplication
+          ✅ PortalBreak
+          ✅ BundleDuplication
+          ✅ NormalizeCoordinates
+          ✅ FrameCrash
+
+          ## 🎮 Komutlar
+
+          ```
+          /atomfix reload       - Config'i yeniden yükle
+          /atomfix status       - Durum ve istatistikler
+          /atomfix toggle <mod> - Modül aç/kapa
+          /atomfix info         - Plugin bilgileri
+          ```
+
+          ## 🔐 İzinler
+
+          - `atomsmpfixer.admin` - Tüm komutlara erişim
+          - `atomsmpfixer.bypass` - Exploit kontrollerini atla
+          - `atomsmpfixer.reload` - Config reload
+          - `atomsmpfixer.notify` - Exploit bildirimleri
+
+          ## 📋 Checksum
+
+          SHA256 checksum dosyası ile doğrulama yapabilirsiniz.
+
+          ## 🐛 Destek
+
+          Hata bildirimi veya öneriler için [Issues](https://github.com/ATOMGAMERAGA/AtomSMPFixer/issues) sayfasını kullanın.
+
+          ---
+
+          **Geliştirici:** AtomSMP
+          **Lisans:** Tüm hakları saklıdır
+          EOF
+
+          echo "Release notes oluşturuldu"
+
+      - name: GitHub Release oluştur
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: AtomSMPFixer ${{ steps.version.outputs.tag }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            target/AtomSMPFixer-${{ steps.version.outputs.version }}.jar
+            target/AtomSMPFixer-${{ steps.version.outputs.version }}.jar.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release başarılı mesajı
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Release başarıyla oluşturuldu!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📦 Version: ${{ steps.version.outputs.version }}"
+          echo "🏷️ Tag: ${{ steps.version.outputs.tag }}"
+          echo "🔗 URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

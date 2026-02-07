@@ -1,0 +1,42 @@
+name: Build Test
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout kod
+        uses: actions/checkout@v4
+
+      - name: Java 21 kurulumu
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Maven ile build
+        run: mvn clean package -DskipTests
+
+      - name: Build sonucunu kontrol et
+        run: |
+          if [ -f target/AtomSMPFixer-*.jar ]; then
+            echo "✅ Build başarılı!"
+            ls -lh target/*.jar
+          else
+            echo "❌ Build başarısız!"
+            exit 1
+          fi
+
+      - name: Artifact yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: AtomSMPFixer-SNAPSHOT
+          path: target/AtomSMPFixer-*.jar
+          retention-days: 7
