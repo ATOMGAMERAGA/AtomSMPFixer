@@ -1,7 +1,9 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateSign;
@@ -25,7 +27,9 @@ import java.util.regex.Pattern;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class SignCrasherModule extends AbstractModule implements PacketListenerCommon {
+public class SignCrasherModule extends AbstractModule {
+
+    private PacketListener listener;
 
     // Config cache
     private int maxLineLength;
@@ -52,10 +56,17 @@ public class SignCrasherModule extends AbstractModule implements PacketListenerC
         // Config değerlerini yükle
         loadConfig();
 
-        // PacketEvents listener'ı kaydet
+        // PacketEvents listener'ı oluştur ve kaydet
+        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                handlePacketReceive(event);
+            }
+        };
+
         com.github.retrooper.packetevents.PacketEvents.getAPI()
             .getEventManager()
-            .registerListener(this);
+            .registerListener(listener);
 
         debug("Modül aktifleştirildi. Max satır uzunluğu: " + maxLineLength);
     }
@@ -65,9 +76,11 @@ public class SignCrasherModule extends AbstractModule implements PacketListenerC
         super.onDisable();
 
         // PacketEvents listener'ı kaldır
-        com.github.retrooper.packetevents.PacketEvents.getAPI()
-            .getEventManager()
-            .unregisterListener(this);
+        if (listener != null) {
+            com.github.retrooper.packetevents.PacketEvents.getAPI()
+                .getEventManager()
+                .unregisterListener(listener);
+        }
 
         debug("Modül devre dışı bırakıldı.");
     }
@@ -88,8 +101,7 @@ public class SignCrasherModule extends AbstractModule implements PacketListenerC
     /**
      * Paket alındığında çağrılır
      */
-    @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
+    private void handlePacketReceive(PacketReceiveEvent event) {
         if (!isEnabled()) {
             return;
         }

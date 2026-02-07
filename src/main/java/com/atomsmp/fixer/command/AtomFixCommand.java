@@ -224,7 +224,7 @@ public class AtomFixCommand implements CommandExecutor {
 
         // PacketEvents versiyon
         Map<String, String> peMap = new HashMap<>();
-        peMap.put("packetevents", com.github.retrooper.packetevents.PacketEvents.getAPI().getVersion().toFullString());
+        peMap.put("packetevents", com.github.retrooper.packetevents.PacketEvents.getAPI().getVersion().toString());
         plugin.getMessageManager().sendMessage(sender, "info.packetevents-versiyon", peMap);
 
         // Java versiyon

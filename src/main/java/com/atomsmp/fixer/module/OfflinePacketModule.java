@@ -1,7 +1,9 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -26,7 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class OfflinePacketModule extends AbstractModule implements PacketListenerCommon {
+public class OfflinePacketModule extends AbstractModule {
+
+    private PacketListener listener;
 
     // Oyuncu login zamanlarını saklayan map
     private final Map<UUID, Long> loginTimes;
@@ -51,10 +55,17 @@ public class OfflinePacketModule extends AbstractModule implements PacketListene
         // Config değerlerini yükle
         loadConfig();
 
-        // PacketEvents listener'ı kaydet
+        // PacketEvents listener'ı oluştur ve kaydet
+        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                handlePacketReceive(event);
+            }
+        };
+
         com.github.retrooper.packetevents.PacketEvents.getAPI()
             .getEventManager()
-            .registerListener(this);
+            .registerListener(listener);
 
         // Online oyuncuların login time'ını kaydet
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -69,9 +80,11 @@ public class OfflinePacketModule extends AbstractModule implements PacketListene
         super.onDisable();
 
         // PacketEvents listener'ı kaldır
-        com.github.retrooper.packetevents.PacketEvents.getAPI()
-            .getEventManager()
-            .unregisterListener(this);
+        if (listener != null) {
+            com.github.retrooper.packetevents.PacketEvents.getAPI()
+                .getEventManager()
+                .unregisterListener(listener);
+        }
 
         // Login time'ları temizle
         loginTimes.clear();
@@ -91,8 +104,7 @@ public class OfflinePacketModule extends AbstractModule implements PacketListene
     /**
      * Paket alındığında çağrılır
      */
-    @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
+    private void handlePacketReceive(PacketReceiveEvent event) {
         if (!isEnabled()) {
             return;
         }

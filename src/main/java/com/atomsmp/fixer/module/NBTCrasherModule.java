@@ -2,7 +2,9 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.NBTUtils;
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
@@ -26,7 +28,9 @@ import org.jetbrains.annotations.NotNull;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class NBTCrasherModule extends AbstractModule implements PacketListenerCommon {
+public class NBTCrasherModule extends AbstractModule {
+
+    private PacketListener listener;
 
     // Config cache
     private int maxNBTTags;
@@ -49,10 +53,17 @@ public class NBTCrasherModule extends AbstractModule implements PacketListenerCo
         // Config değerlerini yükle
         loadConfig();
 
-        // PacketEvents listener'ı kaydet
+        // PacketEvents listener'ı oluştur ve kaydet
+        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                handlePacketReceive(event);
+            }
+        };
+
         com.github.retrooper.packetevents.PacketEvents.getAPI()
             .getEventManager()
-            .registerListener(this);
+            .registerListener(listener);
 
         debug("Modül aktifleştirildi. Max NBT: tags=" + maxNBTTags +
               ", depth=" + maxNBTDepth + ", size=" + maxNBTSizeBytes);
@@ -63,9 +74,11 @@ public class NBTCrasherModule extends AbstractModule implements PacketListenerCo
         super.onDisable();
 
         // PacketEvents listener'ı kaldır
-        com.github.retrooper.packetevents.PacketEvents.getAPI()
-            .getEventManager()
-            .unregisterListener(this);
+        if (listener != null) {
+            com.github.retrooper.packetevents.PacketEvents.getAPI()
+                .getEventManager()
+                .unregisterListener(listener);
+        }
 
         debug("Modül devre dışı bırakıldı.");
     }
@@ -86,8 +99,7 @@ public class NBTCrasherModule extends AbstractModule implements PacketListenerCo
     /**
      * Paket alındığında çağrılır
      */
-    @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
+    private void handlePacketReceive(PacketReceiveEvent event) {
         if (!isEnabled()) {
             return;
         }

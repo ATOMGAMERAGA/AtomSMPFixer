@@ -2,7 +2,9 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.PacketUtils;
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
@@ -24,7 +26,9 @@ import org.jetbrains.annotations.NotNull;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class InvalidSlotModule extends AbstractModule implements PacketListenerCommon {
+public class InvalidSlotModule extends AbstractModule {
+
+    private PacketListener listener;
 
     // Maksimum slot sayısı (Double Chest + Player Inventory)
     private static final int MAX_SLOT = 90;
@@ -43,10 +47,17 @@ public class InvalidSlotModule extends AbstractModule implements PacketListenerC
     public void onEnable() {
         super.onEnable();
 
-        // PacketEvents listener'ı kaydet
+        // PacketEvents listener'ı oluştur ve kaydet
+        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                handlePacketReceive(event);
+            }
+        };
+
         com.github.retrooper.packetevents.PacketEvents.getAPI()
             .getEventManager()
-            .registerListener(this);
+            .registerListener(listener);
 
         debug("Modül aktifleştirildi.");
     }
@@ -56,9 +67,11 @@ public class InvalidSlotModule extends AbstractModule implements PacketListenerC
         super.onDisable();
 
         // PacketEvents listener'ı kaldır
-        com.github.retrooper.packetevents.PacketEvents.getAPI()
-            .getEventManager()
-            .unregisterListener(this);
+        if (listener != null) {
+            com.github.retrooper.packetevents.PacketEvents.getAPI()
+                .getEventManager()
+                .unregisterListener(listener);
+        }
 
         debug("Modül devre dışı bırakıldı.");
     }
@@ -66,8 +79,7 @@ public class InvalidSlotModule extends AbstractModule implements PacketListenerC
     /**
      * Paket alındığında çağrılır
      */
-    @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
+    private void handlePacketReceive(PacketReceiveEvent event) {
         if (!isEnabled()) {
             return;
         }

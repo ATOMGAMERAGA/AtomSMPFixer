@@ -1,7 +1,9 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
@@ -28,7 +30,9 @@ import java.util.Set;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class CustomPayloadModule extends AbstractModule implements PacketListenerCommon {
+public class CustomPayloadModule extends AbstractModule {
+
+    private PacketListener listener;
 
     // İzinli kanallar
     private Set<String> allowedChannels;
@@ -54,10 +58,17 @@ public class CustomPayloadModule extends AbstractModule implements PacketListene
         // Config değerlerini yükle
         loadConfig();
 
-        // PacketEvents listener'ı kaydet
+        // PacketEvents listener'ı oluştur ve kaydet
+        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                handlePacketReceive(event);
+            }
+        };
+
         com.github.retrooper.packetevents.PacketEvents.getAPI()
             .getEventManager()
-            .registerListener(this);
+            .registerListener(listener);
 
         debug("Modül aktifleştirildi. İzinli kanal sayısı: " + allowedChannels.size() +
               ", Max boyut: " + maxPayloadSize + " bytes");
@@ -68,9 +79,11 @@ public class CustomPayloadModule extends AbstractModule implements PacketListene
         super.onDisable();
 
         // PacketEvents listener'ı kaldır
-        com.github.retrooper.packetevents.PacketEvents.getAPI()
-            .getEventManager()
-            .unregisterListener(this);
+        if (listener != null) {
+            com.github.retrooper.packetevents.PacketEvents.getAPI()
+                .getEventManager()
+                .unregisterListener(listener);
+        }
 
         allowedChannels.clear();
 
@@ -116,8 +129,7 @@ public class CustomPayloadModule extends AbstractModule implements PacketListene
     /**
      * Paket alındığında çağrılır
      */
-    @Override
-    public void onPacketReceive(PacketReceiveEvent event) {
+    private void handlePacketReceive(PacketReceiveEvent event) {
         if (!isEnabled()) {
             return;
         }
