@@ -1,7 +1,6 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
@@ -30,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class OfflinePacketModule extends AbstractModule {
 
-    private PacketListener listener;
+    private PacketListenerAbstract listener;
 
     // Oyuncu login zamanlarını saklayan map
     private final Map<UUID, Long> loginTimes;

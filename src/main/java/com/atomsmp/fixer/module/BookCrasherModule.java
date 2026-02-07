@@ -2,7 +2,6 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.BookUtils;
-import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
@@ -28,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class BookCrasherModule extends AbstractModule {
 
-    private PacketListener listener;
+    private PacketListenerAbstract listener;
 
     // Config cache
     private int maxTitleLength;

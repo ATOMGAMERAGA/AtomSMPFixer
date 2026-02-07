@@ -2,7 +2,6 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.PacketUtils;
-import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
@@ -28,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class InvalidSlotModule extends AbstractModule {
 
-    private PacketListener listener;
+    private PacketListenerAbstract listener;
 
     // Maksimum slot sayısı (Double Chest + Player Inventory)
     private static final int MAX_SLOT = 90;
