@@ -2,7 +2,7 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.data.PlayerData;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class PacketDelayModule extends AbstractModule implements PacketListener {
+public class PacketDelayModule extends AbstractModule implements PacketListenerCommon {
 
     // Oyuncu verilerini saklayan map
     private final Map<UUID, PlayerData> playerDataMap;

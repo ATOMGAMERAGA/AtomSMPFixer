@@ -1,7 +1,7 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
@@ -28,7 +28,7 @@ import java.util.Set;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class CustomPayloadModule extends AbstractModule implements PacketListener {
+public class CustomPayloadModule extends AbstractModule implements PacketListenerCommon {
 
     // İzinli kanallar
     private Set<String> allowedChannels;

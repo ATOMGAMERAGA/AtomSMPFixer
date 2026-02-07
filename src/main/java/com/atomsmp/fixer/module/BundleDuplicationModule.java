@@ -2,7 +2,7 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.CooldownManager;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
@@ -26,7 +26,7 @@ import java.util.UUID;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class BundleDuplicationModule extends AbstractModule implements PacketListener {
+public class BundleDuplicationModule extends AbstractModule implements PacketListenerCommon {
 
     private CooldownManager cooldownManager;
 

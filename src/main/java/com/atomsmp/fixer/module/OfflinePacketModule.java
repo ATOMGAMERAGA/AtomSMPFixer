@@ -1,7 +1,7 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class OfflinePacketModule extends AbstractModule implements PacketListener {
+public class OfflinePacketModule extends AbstractModule implements PacketListenerCommon {
 
     // Oyuncu login zamanlarını saklayan map
     private final Map<UUID, Long> loginTimes;

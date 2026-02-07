@@ -1,7 +1,7 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateSign;
@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class SignCrasherModule extends AbstractModule implements PacketListener {
+public class SignCrasherModule extends AbstractModule implements PacketListenerCommon {
 
     // Config cache
     private int maxLineLength;

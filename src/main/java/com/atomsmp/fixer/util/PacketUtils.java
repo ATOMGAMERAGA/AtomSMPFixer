@@ -47,7 +47,7 @@ public class PacketUtils {
      * @param packetType Paket türü
      * @return Güvenli mi?
      */
-    public static boolean isPacketTypeSafe(@NotNull PacketType.Client packetType) {
+    public static boolean isPacketTypeSafe(@NotNull PacketType.Play.Client packetType) {
         // Bazı paket türleri zararlı olabilir
         // Şimdilik tüm paketlere izin ver, modüller özel kontroller yapar
         return true;

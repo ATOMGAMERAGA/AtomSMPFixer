@@ -276,9 +276,10 @@ public class CreativeItemsModule extends AbstractModule implements Listener {
 
         if (cleanedCount > 0) {
             info(player.getName() + " envanterinden " + cleanedCount + " item temizlendi");
+            java.util.Map<String, String> placeholders = new java.util.HashMap<>();
+            placeholders.put("count", String.valueOf(cleanedCount));
             player.sendMessage(plugin.getMessageManager()
-                .getMessage("envanter-temizlendi")
-                .replace("{count}", String.valueOf(cleanedCount)));
+                .getMessage("envanter-temizlendi", placeholders));
         }
     }
 

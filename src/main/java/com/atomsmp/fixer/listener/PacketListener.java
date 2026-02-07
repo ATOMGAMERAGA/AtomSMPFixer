@@ -1,7 +1,7 @@
 package com.atomsmp.fixer.listener;
 
 import com.atomsmp.fixer.AtomSMPFixer;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class PacketListener implements PacketListener {
+public class PacketListener extends PacketListenerAbstract {
 
     private final AtomSMPFixer plugin;
 

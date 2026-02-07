@@ -2,7 +2,7 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.NBTUtils;
-import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  * @author AtomSMP
  * @version 1.0.0
  */
-public class NBTCrasherModule extends AbstractModule implements PacketListener {
+public class NBTCrasherModule extends AbstractModule implements PacketListenerCommon {
 
     // Config cache
     private int maxNBTTags;
@@ -115,19 +115,22 @@ public class NBTCrasherModule extends AbstractModule implements PacketListener {
             WrapperPlayClientCreativeInventoryAction packet =
                 new WrapperPlayClientCreativeInventoryAction(event);
 
-            ItemStack item = packet.getItemStack();
-            if (item == null) {
+            com.github.retrooper.packetevents.protocol.item.ItemStack peItem = packet.getItemStack();
+            if (peItem == null || peItem.isEmpty()) {
                 return;
             }
 
-            debug(player.getName() + " creative item: " + item.getType());
+            debug(player.getName() + " creative item gönderdi");
 
-            // NBT kontrolü
-            if (!isItemNBTSafe(item, player.getName())) {
-                incrementBlockedCount();
-                event.setCancelled(true);
-                player.closeInventory();
-                debug(player.getName() + " için creative item engellendi (NBT)");
+            // NBT kontrolü - Bukkit API ile oyuncunun elindeki item'ı kontrol edelim
+            ItemStack bukkitItem = player.getInventory().getItemInMainHand();
+            if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
+                if (!isItemNBTSafe(bukkitItem, player.getName())) {
+                    incrementBlockedCount();
+                    event.setCancelled(true);
+                    player.closeInventory();
+                    debug(player.getName() + " için creative item engellendi (NBT)");
+                }
             }
 
         } catch (Exception e) {

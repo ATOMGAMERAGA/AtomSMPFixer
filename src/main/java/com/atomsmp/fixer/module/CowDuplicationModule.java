@@ -114,9 +114,10 @@ public class CowDuplicationModule extends AbstractModule implements Listener {
             event.setCancelled(true);
 
             // Oyuncuya mesaj gönder
+            java.util.Map<String, String> placeholders = new java.util.HashMap<>();
+            placeholders.put("time", String.valueOf(remaining));
             player.sendMessage(plugin.getMessageManager()
-                .getMessage("cooldown-aktif")
-                .replace("{time}", String.valueOf(remaining)));
+                .getMessage("cooldown-aktif", placeholders));
 
             debug(player.getName() + " için kırkma engellendi (cooldown)");
             return;
