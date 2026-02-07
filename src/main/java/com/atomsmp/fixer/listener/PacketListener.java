@@ -2,6 +2,7 @@ package com.atomsmp.fixer.listener;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -24,6 +25,7 @@ public class PacketListener extends PacketListenerAbstract {
      * @param plugin Ana plugin instance
      */
     public PacketListener(@NotNull AtomSMPFixer plugin) {
+        super(PacketListenerPriority.NORMAL);
         this.plugin = plugin;
     }
 
