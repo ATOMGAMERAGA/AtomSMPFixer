@@ -192,3 +192,102 @@ moduller:
     aktif: true
     # Chunk başına maksimum frame sayısı
     chunk-basina-max-frame: 50
+
+  # ═══════════════════════════════════════
+  # v2.0 — Yeni Güvenlik Modülleri
+  # ═══════════════════════════════════════
+
+  # Token Bucket Rate Limiter
+  # Her oyuncu için 4 ayrı kova ile paket rate limiting
+  jeton-kovasi:
+    aktif: true
+    kovalar:
+      hareket:
+        kapasite: 80
+        dolum-saniye: 40
+      sohbet:
+        kapasite: 10
+        dolum-saniye: 3
+      envanter:
+        kapasite: 40
+        dolum-saniye: 20
+      diger:
+        kapasite: 60
+        dolum-saniye: 30
+    # Token < bu eşik → oyuncu kick edilir
+    flood-kick-esigi: -50
+
+  # Gelişmiş CustomPayload Filtresi
+  # Mevcut ozel-payload modülünün üzerine ek katman
+  gelismis-payload:
+    aktif: true
+    # Maksimum payload boyutu (byte)
+    max-payload-bayt: 64
+    # İzin verilen kanallar (boş = hepsine izin ver)
+    izinli-kanallar:
+      - "minecraft:brand"
+      - "minecraft:register"
+      - "minecraft:unregister"
+    # Client brand maksimum uzunluğu
+    brand-max-uzunluk: 128
+
+  # Netty Crash Koruması
+  # Pipeline enjeksiyonu + konum doğrulama
+  netty-crash:
+    aktif: true
+    # Maksimum konum değeri (X/Z ekseni)
+    max-konum-degeri: 3.2E7
+    # Maksimum Y ekseni değeri
+    max-y-degeri: 4096
+
+  # Item Temizleyici (1.21 Data Components)
+  # Enchantment, attribute, skull ve food güvenlik kontrolleri
+  item-temizleyici:
+    aktif: true
+    # Büyü toleransı (0 = sadece vanilla max, 1 = max+1'e kadar izin ver)
+    buyu-toleransi: 0
+    # Item başına maksimum attribute modifier sayısı
+    max-attribute-modifier: 6
+    # Skull texture maksimum boyutu (byte)
+    max-kafa-texture-bayt: 10240
+    # Maksimum besin değeri
+    max-besin-degeri: 20
+    # Maksimum yemek efekt sayısı
+    max-yemek-efekt: 4
+
+  # Gelişmiş Bundle Kilitleme
+  # Slot kilitleme ile race condition koruması
+  bundle-kilit:
+    aktif: true
+    # Kilit süresi (tick, 1 tick = 50ms)
+    kilit-suresi-tick: 2
+
+  # Shulker Box Byte Counter (Chunk Ban Koruma)
+  # Aşırı büyük shulker kutularını engeller
+  shulker-bayt:
+    aktif: true
+    # Maksimum shulker boyutu (byte, 200KB)
+    max-bayt: 204800
+    # Aşırı büyük shulker'ı sil
+    fazla-boyutu-sil: true
+
+  # Depolama Entity Kilidi (Donkey/Llama Sync)
+  # İki oyuncunun aynı anda entity envanteri açmasını engeller
+  depolama-entity-kilit:
+    aktif: true
+    # Kilit zaman aşımı (saniye)
+    zaman-asimi-saniye: 30
+
+  # Redstone Sınırlandırıcı (Anti-Lag)
+  # Chunk başına redstone güncelleme sınırı
+  redstone-sinirlandirici:
+    aktif: true
+    # Saniyede maksimum redstone güncellemesi (chunk başına)
+    max-guncelleme-saniye: 500
+    # Limit aşıldığında cooldown süresi (saniye)
+    bekleme-suresi-saniye: 5
+
+  # Görünüm Mesafesi Maskeleme (Anti-NoCom)
+  # View distance dışındaki paketleri filtreler
+  gorunum-mesafesi-maskeleme:
+    aktif: true

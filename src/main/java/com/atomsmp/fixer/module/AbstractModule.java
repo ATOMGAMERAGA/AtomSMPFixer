@@ -180,6 +180,17 @@ public abstract class AbstractModule {
     }
 
     /**
+     * Config'den double değer alır
+     *
+     * @param key Config anahtarı
+     * @param def Varsayılan değer
+     * @return Config değeri
+     */
+    protected double getConfigDouble(@NotNull String key, double def) {
+        return plugin.getConfigManager().getDouble("moduller." + name + "." + key, def);
+    }
+
+    /**
      * Config'den string değer alır
      *
      * @param key Config anahtarı

@@ -22,7 +22,7 @@
 
 ## ✨ Özellikler
 
-- 🛡️ **21 Farklı Exploit Fixer Modülü** - Chunk crasher, dupe, packet exploit ve daha fazlası
+- 🛡️ **30 Farklı Exploit Fixer Modülü** - Chunk crasher, dupe, packet exploit ve daha fazlası
 - 📡 **PacketEvents Entegrasyonu** - Gelişmiş paket seviyesi koruma
 - 🚀 **Ultra-Performanslı** - Thread-safe tasarım, async işlemler, minimal TPS etkisi
 - 🇹🇷 **Tam Türkçe Destek** - MiniMessage formatı ile renkli mesajlar
@@ -85,7 +85,21 @@ Plugin şu exploit düzeltmelerini içerir:
 | **NormalizeCoordinates** | Koordinat normalleştirme | `koordinat-normallestirme` |
 | **FrameCrash** | Item frame crash engelleme | `frame-crash` |
 
-Her modül `config.yml` dosyasından ayrı ayrı kontrol edilebilir.
+### v2.0 - Yeni Gelismis Guvenlik Modulleri
+
+| Modul | Aciklama | Config Key |
+|-------|----------|------------|
+| **TokenBucket** | 4 kovali (hareket/sohbet/envanter/diger) token bucket rate limiter | `jeton-kovasi` |
+| **AdvancedPayload** | Kanal whitelist, boyut limiti, brand analizi, crash client tespiti | `gelismis-payload` |
+| **NettyCrash** | Netty pipeline enjeksiyonu + NaN/Infinity/konum dogrulama | `netty-crash` |
+| **ItemSanitizer** | Item guvenlik temizleyicisi (buyu, attribute, skull, food kontrolleri) | `item-temizleyici` |
+| **BundleLock** | Slot kilitleme ile bundle race condition korumasi | `bundle-kilit` |
+| **ShulkerByte** | Shulker kutusu byte boyutu kontrolu (chunk ban koruma) | `shulker-bayt` |
+| **StorageEntityLock** | Donkey/Llama cift erisim kilidi (entity dupe koruma) | `depolama-entity-kilit` |
+| **RedstoneLimiter** | Chunk bazli redstone guncelleme sinirlandirici (anti-lag) | `redstone-sinirlandirici` |
+| **ViewDistanceMask** | View distance paket maskeleme (Anti-NoCom) | `gorunum-mesafesi-maskeleme` |
+
+Her modul `config.yml` dosyasindan ayri ayri kontrol edilebilir.
 
 ## 🎮 Komutlar
 
@@ -185,10 +199,11 @@ Build edilen JAR: `target/AtomSMPFixer-{version}.jar`
 ```
 AtomSMPFixer/
 ├── manager/          # ConfigManager, MessageManager, LogManager, ModuleManager
-├── module/           # 21 exploit fixer modülü + AbstractModule
-├── listener/         # PacketListener, BukkitListener, InventoryListener
+├── module/           # 30 exploit fixer modülü + AbstractModule
+├── listener/         # PacketListener, BukkitListener, InventoryListener, NettyCrashHandler
 ├── command/          # Komut sistemi
-├── util/             # CooldownManager, PacketUtils, NBTUtils, BookUtils
+├── util/             # CooldownManager, PacketUtils, NBTUtils, BookUtils, TokenBucket, ItemSanitizer
+│   └── checks/       # EnchantmentCheck, AttributeCheck, SkullCheck, FoodCheck
 ├── data/             # PlayerData, ChunkBookTracker
 └── AtomSMPFixer.java # Ana plugin sınıfı
 ```

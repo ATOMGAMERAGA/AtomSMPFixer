@@ -209,6 +209,12 @@ public final class AtomSMPFixer extends JavaPlugin {
                 var invModule = moduleManager.getModule(com.atomsmp.fixer.module.InventoryDuplicationModule.class);
                 if (invModule != null) invModule.cleanup();
 
+                // v2.0 — TokenBucket oyuncu verisi temizliği (sync gerekli — Bukkit API kullanıyor)
+                getServer().getScheduler().runTask(this, () -> {
+                    var tokenModule = moduleManager.getModule(com.atomsmp.fixer.module.TokenBucketModule.class);
+                    if (tokenModule != null) tokenModule.cleanup();
+                });
+
             } catch (Exception e) {
                 getLogger().warning("Cleanup görevi sırasında hata: " + e.getMessage());
             }
@@ -252,6 +258,17 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.BundleDuplicationModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.NormalizeCoordinatesModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.FrameCrashModule(this));
+
+        // v2.0 — Yeni güvenlik modülleri
+        moduleManager.registerModule(new com.atomsmp.fixer.module.TokenBucketModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.AdvancedPayloadModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.NettyCrashModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ItemSanitizerModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.BundleLockModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ShulkerByteModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.StorageEntityLockModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.RedstoneLimiterModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ViewDistanceMaskModule(this));
 
         getLogger().info("Toplam " + moduleManager.getTotalModuleCount() + " modül kaydedildi.");
     }

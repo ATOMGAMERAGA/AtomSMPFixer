@@ -1,9 +1,11 @@
 package com.atomsmp.fixer.listener;
 
 import com.atomsmp.fixer.AtomSMPFixer;
+import com.atomsmp.fixer.module.AdvancedPayloadModule;
 import com.atomsmp.fixer.module.OfflinePacketModule;
 import com.atomsmp.fixer.module.PacketDelayModule;
 import com.atomsmp.fixer.module.PacketExploitModule;
+import com.atomsmp.fixer.module.TokenBucketModule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -81,6 +83,17 @@ public class BukkitListener implements Listener {
         PacketExploitModule exploitModule = plugin.getModuleManager().getModule(PacketExploitModule.class);
         if (exploitModule != null) {
             exploitModule.removePlayerData(player.getUniqueId());
+        }
+
+        // v2.0 — Yeni modül temizlikleri
+        TokenBucketModule tokenModule = plugin.getModuleManager().getModule(TokenBucketModule.class);
+        if (tokenModule != null) {
+            tokenModule.removePlayerData(player.getUniqueId());
+        }
+
+        AdvancedPayloadModule payloadModule = plugin.getModuleManager().getModule(AdvancedPayloadModule.class);
+        if (payloadModule != null) {
+            payloadModule.removePlayerData(player.getUniqueId());
         }
     }
 }

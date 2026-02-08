@@ -6,7 +6,7 @@
 
     <groupId>com.atomsmp</groupId>
     <artifactId>AtomSMPFixer</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>AtomSMPFixer</name>
@@ -56,6 +56,14 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>24.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Netty (Paper sunucu runtime'da sağlar, compile-time için) -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <version>4.1.97.Final</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

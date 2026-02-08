@@ -32,6 +32,15 @@ engelleme:
   frame-crash: "<red>⚠ Item frame limiti aşıldı!"
   cok-fazla-kitap: "<red>⚠ Bu chunk'ta çok fazla kitap var! Limit: {limit}"
   paket-gecikme: "<red>⚠ Paket gecikme exploit'i engellendi!"
+  # v2.0 — Yeni modül mesajları
+  jeton-kovasi-kick: "<red>⚠ Aşırı paket gönderimi tespit edildi! Bağlantınız sonlandırıldı."
+  gelismis-payload: "<red>⚠ Geçersiz payload verisi engellendi!"
+  netty-crash: "<red>⚠ Geçersiz konum verisi tespit edildi! Bağlantınız sonlandırıldı."
+  item-temizlendi: "<red>⚠ Geçersiz item tespit edildi ve temizlendi!"
+  bundle-kilit: "<red>⚠ Bundle etkileşimi geçici olarak kilitlendi!"
+  shulker-bayt: "<red>⚠ Shulker kutusu boyut limiti aşıldı!"
+  entity-kilit: "<red>⚠ Bu entity'nin envanteri şu anda başka biri tarafından kullanılıyor!"
+  redstone-limit: "<red>⚠ Bu bölgede redstone aktivitesi geçici olarak sınırlandırıldı!"
 
 bildirim:
   # Admin bildirimleri
