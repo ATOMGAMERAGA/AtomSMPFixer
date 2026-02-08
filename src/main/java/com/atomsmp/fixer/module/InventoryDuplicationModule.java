@@ -6,7 +6,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -14,23 +16,23 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Envanter Duplikasyon Modülü
+ * Envanter Duplikasyon Modulu
  *
- * Envanter açıkken blok kırma exploit'ini önler.
+ * Envanter acikken blok kirma exploit'ini onler.
  * BlockBreakEvent + InventoryOpenEvent kombinasyonu ile duplikasyonu engeller.
  *
- * Özellikler:
- * - Envanter açık tracking
- * - Blok kırma engelleme
- * - Timing kontrolü
- * - Duplikasyon exploit önleme
+ * Ozellikler:
+ * - Envanter acik tracking
+ * - Blok kirma engelleme
+ * - Timing kontrolu
+ * - Duplikasyon exploit onleme
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 2.0.1
  */
 public class InventoryDuplicationModule extends AbstractModule implements Listener {
 
-    // Envanteri açık olan oyuncular
+    // Envanteri acik olan oyuncular
     private final Map<UUID, Long> openInventories;
 
     /**
@@ -39,7 +41,7 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
      * @param plugin Ana plugin instance
      */
     public InventoryDuplicationModule(@NotNull AtomSMPFixer plugin) {
-        super(plugin, "envanter-duplikasyon", "Envanter duplikasyonu önleme");
+        super(plugin, "envanter-duplikasyon", "Envanter duplikasyonu onleme");
         this.openInventories = new ConcurrentHashMap<>();
     }
 
@@ -50,7 +52,7 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
         // Event listener kaydet
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        debug("Modül aktifleştirildi.");
+        debug("Modul aktiflestirildi.");
     }
 
     @Override
@@ -60,17 +62,19 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
         // Map'i temizle
         openInventories.clear();
 
-        // Event listener'ı kaldır
+        // Event listener'i kaldir
         BlockBreakEvent.getHandlerList().unregister(this);
         InventoryOpenEvent.getHandlerList().unregister(this);
+        InventoryCloseEvent.getHandlerList().unregister(this);
+        PlayerQuitEvent.getHandlerList().unregister(this);
 
-        debug("Modül devre dışı bırakıldı.");
+        debug("Modul devre disi birakildi.");
     }
 
     /**
-     * Envanter açılma olayını dinler
+     * Envanter acilma olayini dinler
      */
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (!isEnabled()) {
             return;
@@ -83,11 +87,31 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
         UUID uuid = player.getUniqueId();
         openInventories.put(uuid, System.currentTimeMillis());
 
-        debug(player.getName() + " envanterini açtı");
+        debug(player.getName() + " envanterini acti");
     }
 
     /**
-     * Blok kırma olayını dinler
+     * Envanter kapatildiginda tracking'i temizle — false positive onleme
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) {
+            return;
+        }
+
+        openInventories.remove(player.getUniqueId());
+    }
+
+    /**
+     * Oyuncu cikisinda tracking'i temizle
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        openInventories.remove(event.getPlayer().getUniqueId());
+    }
+
+    /**
+     * Blok kirma olayini dinler
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
@@ -98,55 +122,60 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // Oyuncunun envanteri açık mı kontrol et
+        // Bypass kontrolu
+        if (player.hasPermission("atomsmpfixer.bypass")) {
+            return;
+        }
+
+        // Oyuncunun envanteri acik mi kontrol et
         Long openTime = openInventories.get(uuid);
         if (openTime != null) {
             long timeSinceOpen = System.currentTimeMillis() - openTime;
 
-            // 50ms içinde blok kırma = şüpheli
-            if (timeSinceOpen < 50) {
+            // 100ms icinde blok kirma = supheli (50ms'den yukari, lag toleransli)
+            if (timeSinceOpen < 100) {
                 incrementBlockedCount();
 
                 logExploit(player.getName(),
-                    String.format("Envanter açıkken blok kırma tespit edildi! Timing: %dms", timeSinceOpen));
+                    String.format("Envanter acikken blok kirma tespit edildi! Timing: %dms", timeSinceOpen));
 
                 event.setCancelled(true);
                 player.closeInventory();
 
-                // Oyuncuya mesaj gönder
+                // Oyuncuya mesaj gonder
                 player.sendMessage(plugin.getMessageManager()
                     .getMessage("envanter-acikken-blok-kirma"));
 
-                debug(player.getName() + " için blok kırma engellendi (envanter açık)");
+                debug(player.getName() + " icin blok kirma engellendi (envanter acik)");
             }
         }
     }
 
     /**
-     * Oyuncunun envanterini kapatır
+     * Oyuncunun envanterini kapatir
      */
     public void closeInventory(@NotNull UUID uuid) {
         openInventories.remove(uuid);
-        debug("Envanter kapatıldı: " + uuid);
+        debug("Envanter kapatildi: " + uuid);
     }
 
     /**
-     * Tüm envanter kayıtlarını temizler
+     * Tum envanter kayitlarini temizler
      */
     public void clearAll() {
         openInventories.clear();
-        debug("Tüm envanter kayıtları temizlendi");
+        debug("Tum envanter kayitlari temizlendi");
     }
 
     /**
-     * Oyuncunun envanterinin açık olup olmadığını kontrol eder
+     * Oyuncunun envanterinin acik olup olmadigini kontrol eder
      */
     public boolean hasOpenInventory(@NotNull UUID uuid) {
         return openInventories.containsKey(uuid);
     }
 
     /**
-     * Memory optimization - kullanılmayan kayıtları temizler
+     * Memory optimization - kullanilmayan kayitlari temizler
      */
     public void cleanup() {
         long currentTime = System.currentTimeMillis();
@@ -157,10 +186,10 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
     }
 
     /**
-     * Modül istatistiklerini döndürür
+     * Modul istatistiklerini dondurur
      */
     public String getStatistics() {
-        return String.format("Açık envanter: %d, Engellenen duplikasyon: %d",
+        return String.format("Acik envanter: %d, Engellenen duplikasyon: %d",
             openInventories.size(),
             getBlockedCount());
     }

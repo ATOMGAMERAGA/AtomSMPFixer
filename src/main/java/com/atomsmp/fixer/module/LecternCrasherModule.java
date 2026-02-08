@@ -84,10 +84,26 @@ public class LecternCrasherModule extends AbstractModule implements Listener {
         }
 
         int slot = event.getSlot();
+        int rawSlot = event.getRawSlot();
 
-        debug(player.getName() + " lectern'e tıkladı. Slot: " + slot);
+        debug(player.getName() + " lectern'e tıkladı. Slot: " + slot + ", Raw: " + rawSlot);
 
-        // Geçersiz slot kontrolü
+        // Bypass kontrolü
+        if (player.hasPermission("atomsmpfixer.bypass")) {
+            return;
+        }
+
+        // Dış tıklama (-999) normal davranış — engelleme
+        if (rawSlot == -999 || slot == -999) {
+            return;
+        }
+
+        // Oyuncunun kendi envanterine tıklaması lectern sorununa yol açmaz
+        if (event.getClickedInventory() != inventory) {
+            return;
+        }
+
+        // Geçersiz slot kontrolü — sadece lectern envanterindeki slotlar
         if (slot < 0) {
             incrementBlockedCount();
 
@@ -101,8 +117,8 @@ public class LecternCrasherModule extends AbstractModule implements Listener {
             return;
         }
 
-        // Slot boundary kontrolü
-        if (slot >= LECTERN_SIZE && event.getClickedInventory() == inventory) {
+        // Slot boundary kontrolü — lectern sadece 1 slot'a sahip
+        if (slot >= LECTERN_SIZE) {
             incrementBlockedCount();
 
             logExploit(player.getName(),
@@ -112,21 +128,6 @@ public class LecternCrasherModule extends AbstractModule implements Listener {
             player.closeInventory();
 
             debug(player.getName() + " için lectern etkileşimi engellendi (slot aşımı)");
-            return;
-        }
-
-        // Raw slot kontrolü (ek güvenlik)
-        int rawSlot = event.getRawSlot();
-        if (rawSlot < 0 || rawSlot >= inventory.getSize() + player.getInventory().getSize()) {
-            incrementBlockedCount();
-
-            logExploit(player.getName(),
-                String.format("Geçersiz raw slot: %d", rawSlot));
-
-            event.setCancelled(true);
-            player.closeInventory();
-
-            debug(player.getName() + " için lectern etkileşimi engellendi (raw slot)");
         }
     }
 

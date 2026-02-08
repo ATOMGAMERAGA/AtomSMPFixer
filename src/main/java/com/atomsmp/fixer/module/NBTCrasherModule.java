@@ -86,9 +86,9 @@ public class NBTCrasherModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxNBTTags = getConfigInt("max-nbt-etiket", 100);
-        this.maxNBTDepth = getConfigInt("max-nbt-derinlik", 10);
-        this.maxNBTSizeBytes = getConfigInt("max-nbt-boyut-byte", 102400); // 100KB
+        this.maxNBTTags = getConfigInt("max-nbt-etiket", 1000);
+        this.maxNBTDepth = getConfigInt("max-nbt-derinlik", 16);
+        this.maxNBTSizeBytes = getConfigInt("max-nbt-boyut-byte", 500000); // 500KB
 
         debug("Config yüklendi: maxTags=" + maxNBTTags +
               ", maxDepth=" + maxNBTDepth +

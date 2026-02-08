@@ -200,6 +200,11 @@ public class CustomPayloadModule extends AbstractModule {
             return true;
         }
 
+        // Varsayılan güvenli prefix'ler — minecraft ve bungeecord kanalları her zaman izinli
+        if (channel.startsWith("minecraft:") || channel.startsWith("bungeecord:")) {
+            return true;
+        }
+
         // Wildcard kontrolü (örn: "myplugin:*")
         for (String allowed : allowedChannels) {
             if (allowed.endsWith(":*")) {

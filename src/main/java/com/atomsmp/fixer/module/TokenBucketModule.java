@@ -38,11 +38,12 @@ public class TokenBucketModule extends AbstractModule {
         HAREKET, SOHBET, ENVANTER, DIGER
     }
 
-    /** Hareket paketleri */
+    /** Hareket paketleri — PLAYER_FLYING dahil (client her tick gönderir) */
     private static final Set<PacketType.Play.Client> MOVEMENT_PACKETS = Set.of(
             PacketType.Play.Client.PLAYER_POSITION,
             PacketType.Play.Client.PLAYER_POSITION_AND_ROTATION,
-            PacketType.Play.Client.PLAYER_ROTATION
+            PacketType.Play.Client.PLAYER_ROTATION,
+            PacketType.Play.Client.PLAYER_FLYING
     );
 
     /** Sohbet paketleri */
@@ -115,15 +116,15 @@ public class TokenBucketModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.hareketKapasite = getConfigLong("kovalar.hareket.kapasite", 80L);
-        this.hareketDolum = getConfigLong("kovalar.hareket.dolum-saniye", 40L);
-        this.sohbetKapasite = getConfigLong("kovalar.sohbet.kapasite", 10L);
-        this.sohbetDolum = getConfigLong("kovalar.sohbet.dolum-saniye", 3L);
-        this.envanterKapasite = getConfigLong("kovalar.envanter.kapasite", 40L);
-        this.envanterDolum = getConfigLong("kovalar.envanter.dolum-saniye", 20L);
-        this.digerKapasite = getConfigLong("kovalar.diger.kapasite", 60L);
-        this.digerDolum = getConfigLong("kovalar.diger.dolum-saniye", 30L);
-        this.floodKickThreshold = getConfigLong("flood-kick-esigi", -50L);
+        this.hareketKapasite = getConfigLong("kovalar.hareket.kapasite", 200L);
+        this.hareketDolum = getConfigLong("kovalar.hareket.dolum-saniye", 80L);
+        this.sohbetKapasite = getConfigLong("kovalar.sohbet.kapasite", 20L);
+        this.sohbetDolum = getConfigLong("kovalar.sohbet.dolum-saniye", 5L);
+        this.envanterKapasite = getConfigLong("kovalar.envanter.kapasite", 100L);
+        this.envanterDolum = getConfigLong("kovalar.envanter.dolum-saniye", 50L);
+        this.digerKapasite = getConfigLong("kovalar.diger.kapasite", 150L);
+        this.digerDolum = getConfigLong("kovalar.diger.dolum-saniye", 60L);
+        this.floodKickThreshold = getConfigLong("flood-kick-esigi", -200L);
     }
 
     /**

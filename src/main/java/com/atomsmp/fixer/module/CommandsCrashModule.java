@@ -105,21 +105,18 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
     private List<String> getDefaultBlockedCommands() {
         List<String> defaults = new ArrayList<>();
 
-        // Selector exploit'leri
+        // Selector exploit'leri — çift parametreli selector'lar
         defaults.add(".*@[aeprs]\\[.*distance=.*,.*distance=.*\\].*");
         defaults.add(".*@[aeprs]\\[.*type=.*,.*type=.*\\].*");
 
-        // Uzun komutlar (crash)
-        defaults.add(".{1000,}"); // 1000+ karakter
+        // Uzun komutlar (crash) — 2000+ karakter
+        defaults.add(".{2000,}");
 
-        // Aşırı entity selector
+        // Aşırı entity selector — 10+ selector
         defaults.add(".*(@[aeprs]\\[.*\\]){10,}.*");
 
-        // NBT injection
-        defaults.add(".*\\{.*:.*\\}.*\\{.*:.*\\}.*\\{.*:.*\\}.*");
-
-        // Recursion attempts
-        defaults.add(".*/execute.*execute.*execute.*execute.*");
+        // Derin recursive execute — 6+ iç içe execute (normal kullanım 1-3)
+        defaults.add(".*/execute(\\s+.*\\s+execute){5,}.*");
 
         return defaults;
     }
@@ -159,12 +156,12 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
             }
         }
 
-        // Uzunluk kontrolü (ek güvenlik)
-        if (command.length() > 2000) {
+        // Uzunluk kontrolü (ek güvenlik) — Minecraft vanilya limiti 32500 karakter
+        if (command.length() > 10000) {
             incrementBlockedCount();
 
             logExploit(player.getName(),
-                String.format("Çok uzun komut: %d karakter (Limit: 2000)", command.length()));
+                String.format("Çok uzun komut: %d karakter (Limit: 10000)", command.length()));
 
             event.setCancelled(true);
             player.sendMessage(plugin.getMessageManager().getMessage("komut-cok-uzun"));

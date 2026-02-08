@@ -93,15 +93,20 @@ public class AdvancedPayloadModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxPayloadBytes = getConfigInt("max-payload-bayt", 64);
-        this.brandMaxLength = getConfigInt("brand-max-uzunluk", 128);
+        this.maxPayloadBytes = getConfigInt("max-payload-bayt", 32768);
+        this.brandMaxLength = getConfigInt("brand-max-uzunluk", 256);
 
         // İzinli kanalları yükle
         List<String> configChannels = plugin.getConfigManager()
                 .getStringList("moduller." + getName() + ".izinli-kanallar");
-        this.allowedChannels = configChannels != null
-                ? new HashSet<>(configChannels)
-                : new HashSet<>(Set.of("minecraft:brand", "minecraft:register", "minecraft:unregister"));
+        if (configChannels != null && !configChannels.isEmpty()) {
+            this.allowedChannels = new HashSet<>(configChannels);
+        } else {
+            // Varsayılan: tüm bilinen güvenli kanallar
+            this.allowedChannels = new HashSet<>(Set.of(
+                    "minecraft:brand", "minecraft:register", "minecraft:unregister"
+            ));
+        }
     }
 
     /**
@@ -132,7 +137,8 @@ public class AdvancedPayloadModule extends AbstractModule {
             }
 
             // 3. Whitelist kontrolü — izinli kanallar listesinde olmalı
-            if (!allowedChannels.isEmpty() && !allowedChannels.contains(channel)) {
+            //    minecraft: ve bungeecord: prefix'li kanallar varsayılan olarak izinli
+            if (!allowedChannels.isEmpty() && !isChannelAllowed(channel)) {
                 blockPacket(event, player, "İzin verilmeyen kanal: " + channel);
                 return;
             }
@@ -152,6 +158,29 @@ public class AdvancedPayloadModule extends AbstractModule {
         } catch (Exception e) {
             error("Payload paketi işlenirken hata: " + e.getMessage());
         }
+    }
+
+    /**
+     * Kanalın izinli olup olmadığını kontrol eder.
+     * Tam eşleşme veya prefix bazlı eşleşme destekler.
+     * minecraft: ve bungeecord: prefix'li kanallar varsayılan olarak izinlidir.
+     */
+    private boolean isChannelAllowed(@NotNull String channel) {
+        // Tam eşleşme
+        if (allowedChannels.contains(channel)) return true;
+
+        // Varsayılan güvenli prefix'ler — modded client'lar ve plugin'ler için
+        if (channel.startsWith("minecraft:") || channel.startsWith("bungeecord:")) return true;
+
+        // Wildcard kontrolü (örn: "myplugin:*")
+        for (String allowed : allowedChannels) {
+            if (allowed.endsWith(":*")) {
+                String prefix = allowed.substring(0, allowed.length() - 1);
+                if (channel.startsWith(prefix)) return true;
+            }
+        }
+
+        return false;
     }
 
     /**

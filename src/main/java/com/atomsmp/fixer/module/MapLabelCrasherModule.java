@@ -69,7 +69,7 @@ public class MapLabelCrasherModule extends AbstractModule implements Listener {
      */
     private void loadConfig() {
         this.disableLabels = getConfigBoolean("etiketleri-devre-disi-birak", false);
-        this.maxLabelCount = getConfigInt("max-etiket-sayisi", 100);
+        this.maxLabelCount = getConfigInt("max-etiket-sayisi", 50);
 
         debug("Config yüklendi: disableLabels=" + disableLabels +
               ", maxLabels=" + maxLabelCount);

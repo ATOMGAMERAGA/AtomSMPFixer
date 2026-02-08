@@ -88,7 +88,7 @@ public class SignCrasherModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxLineLength = getConfigInt("max-satir-uzunlugu", 80);
+        this.maxLineLength = getConfigInt("max-satir-uzunlugu", 384);
         this.cleanColorCodes = getConfigBoolean("renk-kodlarini-temizle", false);
         this.blockSpecialChars = getConfigBoolean("ozel-karakterleri-engelle", true);
 

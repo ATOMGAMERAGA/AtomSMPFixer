@@ -96,7 +96,7 @@ public class OfflinePacketModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.toleranceMs = getConfigLong("tolerans-suresi-ms", 3000L); // 3 saniye
+        this.toleranceMs = getConfigLong("tolerans-suresi-ms", 5000L); // 5 saniye
 
         debug("Config yüklendi: tolerance=" + toleranceMs + "ms");
     }

@@ -1,6 +1,7 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
+# ║          v2.0.1 — False Positive Fix         ║
 # ╚══════════════════════════════════════════════╝
 
 # Genel Ayarlar
@@ -29,36 +30,39 @@ moduller:
   cok-fazla-kitap:
     aktif: true
     # Bir chunk'ta maksimum kitap sayısı
-    chunk-basina-max-kitap: 20
+    chunk-basina-max-kitap: 50
     # Maksimum sayfa uzunluğu (karakter)
     max-sayfa-uzunlugu: 256
     # Maksimum toplam kitap boyutu (byte)
-    max-toplam-boyut: 40000
+    max-toplam-boyut: 100000
     # İhlal durumunda eylem: ENGELLE, KALDIR, AT
     eylem: "ENGELLE"
 
   # Paket gecikme exploit'i (Bundle Dupe)
   paket-gecikme:
     aktif: true
-    # Saniyede maksimum paket sayısı
-    saniyede-max-paket: 150
+    # Saniyede maksimum paket sayısı (paket türü başına)
+    saniyede-max-paket: 500
     # Paket gecikme eşiği (ms)
-    gecikme-esigi-ms: 50
+    gecikme-esigi-ms: 20
 
   # Paket exploit düzeltmesi (Netty Crasher)
   paket-exploit:
     aktif: true
     # Maksimum paket boyutu (byte)
     max-paket-boyutu: 32767
-    # Saniyede maksimum paket oranı
-    max-paket-orani: 500
+    # Saniyede maksimum toplam paket oranı
+    max-paket-orani: 800
+    # Zaman penceresi (ms)
+    zaman-penceresi-ms: 1000
     # Kara listedeki paket türleri
     kara-liste-paketler: []
 
   # CustomPayload düzeltmesi
   ozel-payload:
     aktif: true
-    # İzin verilen kanallar (boş = hepsine izin ver, dolu = sadece bunlara)
+    # İzin verilen kanallar (boş = varsayılan güvenli kanallar)
+    # minecraft: ve bungeecord: prefix'li kanallar varsayılan olarak izinlidir
     izinli-kanallar: []
     # Maksimum payload boyutu (byte)
     max-payload-boyutu: 32767
@@ -69,12 +73,11 @@ moduller:
   komut-crash:
     aktif: true
     # Engellenen komutlar (regex destekli)
+    # DİKKAT: Çok geniş pattern'lar false positive yaratır!
     engellenen-komutlar:
       - "//calc.*"
       - "//eval.*"
       - "/worldedit:.*calc.*"
-      - "/mv.*create.*"
-      - "/execute.*"
 
   # Creative item düzeltmesi (World Crasher)
   creative-item:
@@ -89,7 +92,7 @@ moduller:
       - "JIGSAW"
       - "DEBUG_STICK"
     # Creative modda maksimum NBT boyutu
-    max-nbt-boyutu-creative: 5000
+    max-nbt-boyutu-creative: 50000
     # Özel veriyi soy
     ozel-veriyi-soy: true
     # Maksimum büyü seviyesi
@@ -98,8 +101,8 @@ moduller:
   # Tabela crash düzeltmesi (World Crasher)
   tabela-crash:
     aktif: true
-    # Maksimum satır uzunluğu
-    max-satir-uzunlugu: 45
+    # Maksimum satır uzunluğu (vanilla: ~384 karakter)
+    max-satir-uzunlugu: 384
     # Renk kodlarını temizle
     renk-kodlarini-temizle: false
     # Özel karakterleri engelle
@@ -113,9 +116,9 @@ moduller:
   harita-etiketi-crash:
     aktif: true
     # Harita etiketlerini devre dışı bırak
-    etiketleri-devre-disi-birak: true
+    etiketleri-devre-disi-birak: false
     # Harita başına maksimum etiket
-    max-etiket-sayisi: 5
+    max-etiket-sayisi: 50
 
   # Geçersiz envanter slotu düzeltmesi
   gecersiz-slot:
@@ -125,23 +128,23 @@ moduller:
   nbt-crash:
     aktif: true
     # Maksimum NBT etiket sayısı
-    max-nbt-etiket: 500
+    max-nbt-etiket: 1000
     # Maksimum NBT derinliği
-    max-nbt-derinlik: 10
+    max-nbt-derinlik: 16
     # Maksimum NBT boyutu (byte)
-    max-nbt-boyut-byte: 200000
+    max-nbt-boyut-byte: 500000
 
   # Kitap crash düzeltmesi
   kitap-crash:
     aktif: true
     # Maksimum başlık uzunluğu
-    max-baslik-uzunlugu: 32
+    max-baslik-uzunlugu: 64
     # Maksimum sayfa sayısı
     max-sayfa-sayisi: 100
     # Sayfa başına maksimum boyut
-    max-sayfa-boyutu: 256
+    max-sayfa-boyutu: 1024
     # Maksimum toplam kitap boyutu
-    max-toplam-kitap-boyutu: 40000
+    max-toplam-kitap-boyutu: 100000
 
   # İnek duplikasyon düzeltmesi
   inek-duplikasyon:
@@ -156,8 +159,8 @@ moduller:
   # Çevrimdışı paket duplikasyon düzeltmesi
   cevrimdisi-paket:
     aktif: true
-    # Tolerans süresi (ms)
-    tolerans-suresi-ms: 1000
+    # Tolerans süresi (ms) — yeni giriş yapan oyuncular için bekleme
+    tolerans-suresi-ms: 5000
 
   # Envanter duplikasyon düzeltmesi
   envanter-duplikasyon:
@@ -178,10 +181,10 @@ moduller:
   # Bundle duplikasyon düzeltmesi
   bundle-duplikasyon:
     aktif: true
-    # Tıklama cooldown süresi (ms)
-    tiklama-cooldown-ms: 100
+    # Tıklama cooldown süresi (ms) — sadece bundle etkileşimlerine uygulanır
+    tiklama-cooldown-ms: 50
     # Bırakma cooldown süresi (ms)
-    birakma-cooldown-ms: 100
+    birakma-cooldown-ms: 50
 
   # Koordinat normalleştirme
   koordinat-normallestirme:
@@ -191,7 +194,7 @@ moduller:
   frame-crash:
     aktif: true
     # Chunk başına maksimum frame sayısı
-    chunk-basina-max-frame: 50
+    chunk-basina-max-frame: 100
 
   # ═══════════════════════════════════════
   # v2.0 — Yeni Güvenlik Modülleri
@@ -203,33 +206,34 @@ moduller:
     aktif: true
     kovalar:
       hareket:
-        kapasite: 80
-        dolum-saniye: 40
+        kapasite: 200
+        dolum-saniye: 80
       sohbet:
-        kapasite: 10
-        dolum-saniye: 3
+        kapasite: 20
+        dolum-saniye: 5
       envanter:
-        kapasite: 40
-        dolum-saniye: 20
+        kapasite: 100
+        dolum-saniye: 50
       diger:
-        kapasite: 60
-        dolum-saniye: 30
+        kapasite: 150
+        dolum-saniye: 60
     # Token < bu eşik → oyuncu kick edilir
-    flood-kick-esigi: -50
+    flood-kick-esigi: -200
 
   # Gelişmiş CustomPayload Filtresi
   # Mevcut ozel-payload modülünün üzerine ek katman
   gelismis-payload:
     aktif: true
-    # Maksimum payload boyutu (byte)
-    max-payload-bayt: 64
-    # İzin verilen kanallar (boş = hepsine izin ver)
+    # Maksimum payload boyutu (byte) — vanilla limiti 32767
+    max-payload-bayt: 32768
+    # İzin verilen kanallar (boş = varsayılan güvenli kanallar)
+    # minecraft: ve bungeecord: prefix'li kanallar varsayılan olarak izinlidir
     izinli-kanallar:
       - "minecraft:brand"
       - "minecraft:register"
       - "minecraft:unregister"
     # Client brand maksimum uzunluğu
-    brand-max-uzunluk: 128
+    brand-max-uzunluk: 256
 
   # Netty Crash Koruması
   # Pipeline enjeksiyonu + konum doğrulama
@@ -244,16 +248,16 @@ moduller:
   # Enchantment, attribute, skull ve food güvenlik kontrolleri
   item-temizleyici:
     aktif: true
-    # Büyü toleransı (0 = sadece vanilla max, 1 = max+1'e kadar izin ver)
-    buyu-toleransi: 0
+    # Büyü toleransı (0 = sadece vanilla max, 5 = max+5'e kadar izin ver)
+    buyu-toleransi: 5
     # Item başına maksimum attribute modifier sayısı
-    max-attribute-modifier: 6
+    max-attribute-modifier: 12
     # Skull texture maksimum boyutu (byte)
-    max-kafa-texture-bayt: 10240
+    max-kafa-texture-bayt: 32768
     # Maksimum besin değeri
     max-besin-degeri: 20
     # Maksimum yemek efekt sayısı
-    max-yemek-efekt: 4
+    max-yemek-efekt: 6
 
   # Gelişmiş Bundle Kilitleme
   # Slot kilitleme ile race condition koruması
@@ -266,8 +270,8 @@ moduller:
   # Aşırı büyük shulker kutularını engeller
   shulker-bayt:
     aktif: true
-    # Maksimum shulker boyutu (byte, 200KB)
-    max-bayt: 204800
+    # Maksimum shulker boyutu (byte, 500KB)
+    max-bayt: 512000
     # Aşırı büyük shulker'ı sil
     fazla-boyutu-sil: true
 
@@ -283,9 +287,9 @@ moduller:
   redstone-sinirlandirici:
     aktif: true
     # Saniyede maksimum redstone güncellemesi (chunk başına)
-    max-guncelleme-saniye: 500
+    max-guncelleme-saniye: 1000
     # Limit aşıldığında cooldown süresi (saniye)
-    bekleme-suresi-saniye: 5
+    bekleme-suresi-saniye: 3
 
   # Görünüm Mesafesi Maskeleme (Anti-NoCom)
   # View distance dışındaki paketleri filtreler

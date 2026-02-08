@@ -76,8 +76,8 @@ public class ItemSanitizerModule extends AbstractModule implements Listener {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.enchantTolerance = getConfigInt("buyu-toleransi", 0);
-        this.maxAttributeModifiers = getConfigInt("max-attribute-modifier", 6);
+        this.enchantTolerance = getConfigInt("buyu-toleransi", 5);
+        this.maxAttributeModifiers = getConfigInt("max-attribute-modifier", 12);
         this.maxSkullTextureBytes = getConfigInt("max-kafa-texture-bayt", 10240);
         this.maxNutrition = getConfigInt("max-besin-degeri", 20);
         this.maxFoodEffects = getConfigInt("max-yemek-efekt", 4);

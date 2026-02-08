@@ -93,8 +93,8 @@ public class PacketDelayModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxPacketsPerSecond = getConfigInt("saniyede-max-paket", 100);
-        this.delayThresholdMs = getConfigLong("gecikme-esigi-ms", 50L);
+        this.maxPacketsPerSecond = getConfigInt("saniyede-max-paket", 500);
+        this.delayThresholdMs = getConfigLong("gecikme-esigi-ms", 20L);
 
         debug("Config yüklendi: maxPackets=" + maxPacketsPerSecond +
               ", delayThreshold=" + delayThresholdMs + "ms");

@@ -87,8 +87,8 @@ public class RedstoneLimiterModule extends AbstractModule implements Listener {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxUpdatesPerSecond = getConfigInt("max-guncelleme-saniye", 500);
-        this.cooldownSeconds = getConfigInt("bekleme-suresi-saniye", 5);
+        this.maxUpdatesPerSecond = getConfigInt("max-guncelleme-saniye", 1000);
+        this.cooldownSeconds = getConfigInt("bekleme-suresi-saniye", 3);
     }
 
     /**

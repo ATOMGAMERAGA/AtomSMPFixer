@@ -78,9 +78,16 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
                     || lowerMsg.contains("packet too large");
         }
 
-        // DecoderException her zaman şüpheli
-        if (cause.getClass().getSimpleName().contains("DecoderException")) {
-            isCrashAttempt = true;
+        // DecoderException ise bilinen crash vektörlerini kontrol et
+        // NOT: Her DecoderException crash girişimi DEĞİLDİR — kötü bağlantı da buna yol açabilir
+        if (cause.getClass().getSimpleName().contains("DecoderException") && errorMsg != null) {
+            String lowerCauseMsg = errorMsg.toLowerCase();
+            // Sadece bilinen crash vektörleri ile eşleşirse işaretle
+            if (lowerCauseMsg.contains("overflow") || lowerCauseMsg.contains("varint")
+                    || lowerCauseMsg.contains("too big") || lowerCauseMsg.contains("too large")
+                    || lowerCauseMsg.contains("negative length")) {
+                isCrashAttempt = true;
+            }
         }
 
         if (isCrashAttempt) {
@@ -97,8 +104,9 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
             return;
         }
 
-        // Bilinmeyen hatalar için varsayılan davranış
-        ctx.close();
+        // Bilinmeyen hatalar için — pipeline'daki sonraki handler'a ilet
+        // Bağlantıyı kapatma, normal ağ hataları olabilir
+        ctx.fireExceptionCaught(cause);
     }
 
     /**

@@ -94,8 +94,8 @@ public class BundleDuplicationModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.clickCooldownMs = getConfigLong("tiklama-cooldown-ms", 100L);
-        this.dropCooldownMs = getConfigLong("birakma-cooldown-ms", 100L);
+        this.clickCooldownMs = getConfigLong("tiklama-cooldown-ms", 50L);
+        this.dropCooldownMs = getConfigLong("birakma-cooldown-ms", 50L);
 
         debug("Config yüklendi: clickCooldown=" + clickCooldownMs +
               "ms, dropCooldown=" + dropCooldownMs + "ms");
@@ -122,9 +122,17 @@ public class BundleDuplicationModule extends AbstractModule {
             WrapperPlayClientClickWindow packet = new WrapperPlayClientClickWindow(event);
             UUID uuid = player.getUniqueId();
 
-            // Click type kontrolü
-            // Note: Bundle detection için özel kontrol gerekebilir
-            // Şimdilik genel click cooldown uyguluyoruz
+            // Önce bundle ile ilgili bir etkileşim mi kontrol et
+            // Oyuncunun elinde veya cursor'ında bundle olup olmadığını kontrol et
+            org.bukkit.inventory.ItemStack mainHand = player.getInventory().getItemInMainHand();
+            org.bukkit.inventory.ItemStack offHand = player.getInventory().getItemInOffHand();
+            org.bukkit.inventory.ItemStack cursorItem = player.getItemOnCursor();
+            boolean bundleInvolved = isBundleItem(mainHand) || isBundleItem(offHand) || isBundleItem(cursorItem);
+
+            // Bundle yoksa bu modülün işi değil — atla
+            if (!bundleInvolved) {
+                return;
+            }
 
             String cooldownType;
             long cooldownTime;
@@ -138,7 +146,7 @@ public class BundleDuplicationModule extends AbstractModule {
                 cooldownTime = clickCooldownMs;
             }
 
-            debug(player.getName() + " ClickWindow: " + cooldownType);
+            debug(player.getName() + " Bundle ClickWindow: " + cooldownType);
 
             // Cooldown kontrolü
             if (cooldownManager.isOnCooldown(uuid, cooldownType, cooldownTime)) {
@@ -192,6 +200,13 @@ public class BundleDuplicationModule extends AbstractModule {
      */
     public boolean isDropOnCooldown(@NotNull UUID uuid) {
         return cooldownManager.isOnCooldown(uuid, "bundle_drop", dropCooldownMs);
+    }
+
+    /**
+     * Item'ın bundle olup olmadığını kontrol eder
+     */
+    private boolean isBundleItem(org.bukkit.inventory.ItemStack item) {
+        return item != null && item.getType() == org.bukkit.Material.BUNDLE;
     }
 
     /**
