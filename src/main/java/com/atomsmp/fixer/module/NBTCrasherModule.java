@@ -8,6 +8,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -132,8 +133,8 @@ public class NBTCrasherModule extends AbstractModule {
 
             debug(player.getName() + " creative item gönderdi");
 
-            // NBT kontrolü - Bukkit API ile oyuncunun elindeki item'ı kontrol edelim
-            ItemStack bukkitItem = player.getInventory().getItemInMainHand();
+            // NBT kontrolü - Paketten gelen item'ı kontrol et
+            ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
             if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
                 if (!isItemNBTSafe(bukkitItem, player.getName())) {
                     incrementBlockedCount();
@@ -155,11 +156,22 @@ public class NBTCrasherModule extends AbstractModule {
         try {
             WrapperPlayClientClickWindow packet = new WrapperPlayClientClickWindow(event);
 
-            // Carried item kontrolü (cursor item)
-            // Not: PacketEvents 2.0+ API ile item bilgisi alınabilir
-            // Şimdilik temel kontrol yapıyoruz
+            // Cursor item kontrolü
+            com.github.retrooper.packetevents.protocol.item.ItemStack peItem = packet.getCarriedItemStack();
+            if (peItem == null || peItem.isEmpty()) {
+                return;
+            }
 
-            debug(player.getName() + " click window");
+            // NBT kontrolü
+            ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
+            if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
+                if (!isItemNBTSafe(bukkitItem, player.getName())) {
+                    incrementBlockedCount();
+                    event.setCancelled(true);
+                    player.closeInventory();
+                    debug(player.getName() + " için click window item engellendi (NBT)");
+                }
+            }
 
         } catch (Exception e) {
             error("ClickWindow paketi işlenirken hata: " + e.getMessage());

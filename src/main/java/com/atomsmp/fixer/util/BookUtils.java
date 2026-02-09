@@ -53,7 +53,9 @@ public class BookUtils {
             return 0;
         }
 
-        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (!(item.getItemMeta() instanceof BookMeta meta)) {
+            return 0;
+        }
         return meta.getPageCount();
     }
 
@@ -69,7 +71,9 @@ public class BookUtils {
             return null;
         }
 
-        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (!(item.getItemMeta() instanceof BookMeta meta)) {
+            return null;
+        }
         return meta.getTitle();
     }
 
@@ -84,16 +88,18 @@ public class BookUtils {
             return 0;
         }
 
-        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (!(item.getItemMeta() instanceof BookMeta meta)) {
+            return 0;
+        }
         int totalSize = 0;
 
         // Başlık
-        if (meta.hasTitle()) {
+        if (meta.hasTitle() && meta.getTitle() != null) {
             totalSize += meta.getTitle().length() * 2; // Unicode için x2
         }
 
         // Yazar
-        if (meta.hasAuthor()) {
+        if (meta.hasAuthor() && meta.getAuthor() != null) {
             totalSize += meta.getAuthor().length() * 2;
         }
 
@@ -130,10 +136,12 @@ public class BookUtils {
             return true;
         }
 
-        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (!(item.getItemMeta() instanceof BookMeta meta)) {
+            return true;
+        }
 
         // Başlık kontrolü
-        if (meta.hasTitle() && meta.getTitle().length() > maxTitle) {
+        if (meta.hasTitle() && meta.getTitle() != null && meta.getTitle().length() > maxTitle) {
             return false;
         }
 
@@ -178,10 +186,12 @@ public class BookUtils {
             return item;
         }
 
-        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (!(item.getItemMeta() instanceof BookMeta meta)) {
+            return item;
+        }
 
         // Başlığı sınırla
-        if (meta.hasTitle() && meta.getTitle().length() > maxTitle) {
+        if (meta.hasTitle() && meta.getTitle() != null && meta.getTitle().length() > maxTitle) {
             meta.setTitle(meta.getTitle().substring(0, maxTitle));
         }
 
@@ -280,7 +290,9 @@ public class BookUtils {
             return item;
         }
 
-        BookMeta meta = (BookMeta) item.getItemMeta();
+        if (!(item.getItemMeta() instanceof BookMeta meta)) {
+            return item;
+        }
         meta.setPages(new ArrayList<>());
         item.setItemMeta(meta);
 
@@ -303,8 +315,9 @@ public class BookUtils {
             return !book1.hasItemMeta() && !book2.hasItemMeta();
         }
 
-        BookMeta meta1 = (BookMeta) book1.getItemMeta();
-        BookMeta meta2 = (BookMeta) book2.getItemMeta();
+        if (!(book1.getItemMeta() instanceof BookMeta meta1) || !(book2.getItemMeta() instanceof BookMeta meta2)) {
+            return book1.getItemMeta().equals(book2.getItemMeta());
+        }
 
         // Başlık karşılaştır
         if (!java.util.Objects.equals(meta1.getTitle(), meta2.getTitle())) {

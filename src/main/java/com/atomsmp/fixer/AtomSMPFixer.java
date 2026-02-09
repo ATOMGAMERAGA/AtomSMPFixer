@@ -183,6 +183,9 @@ public final class AtomSMPFixer extends JavaPlugin {
         getCommand("atomfix").setExecutor(atomFixCommand);
         getCommand("atomfix").setTabCompleter(tabCompleter);
 
+        // /panic komutu
+        getCommand("panic").setExecutor(new com.atomsmp.fixer.command.PanicCommand(this));
+
         getLogger().info("Komutlar kaydedildi.");
     }
 
@@ -269,6 +272,17 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.StorageEntityLockModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.RedstoneLimiterModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.ViewDistanceMaskModule(this));
+        
+        // v2.1 — Bot Koruması
+        moduleManager.registerModule(new com.atomsmp.fixer.module.BotProtectionModule(this));
+
+        // v2.2 — Yeni Gelişmiş Güvenlik Modülleri
+        moduleManager.registerModule(new com.atomsmp.fixer.module.FallingBlockLimiterModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ExplosionLimiterModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.MovementSecurityModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.VisualCrasherModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.AdvancedChatModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.PistonLimiterModule(this));
 
         getLogger().info("Toplam " + moduleManager.getTotalModuleCount() + " modül kaydedildi.");
     }

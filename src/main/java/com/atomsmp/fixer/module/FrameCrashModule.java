@@ -31,11 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class FrameCrashModule extends AbstractModule implements Listener {
 
-    // Chunk başına frame sayısını tutan map
+    // Chunk başına frame ve armor stand sayısını tutan map
     private final Map<ChunkKey, AtomicInteger> frameCounts;
+    private final Map<ChunkKey, AtomicInteger> armorStandCounts;
 
     // Config cache
     private int maxFramesPerChunk;
+    private int maxArmorStandsPerChunk;
 
     /**
      * FrameCrashModule constructor
@@ -43,8 +45,9 @@ public class FrameCrashModule extends AbstractModule implements Listener {
      * @param plugin Ana plugin instance
      */
     public FrameCrashModule(@NotNull AtomSMPFixer plugin) {
-        super(plugin, "frame-crash", "Item frame crash kontrolü");
+        super(plugin, "frame-crash", "Item frame ve Armor stand crash kontrolü");
         this.frameCounts = new ConcurrentHashMap<>();
+        this.armorStandCounts = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -57,15 +60,16 @@ public class FrameCrashModule extends AbstractModule implements Listener {
         // Event listener kaydet
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        debug("Modül aktifleştirildi. Max frame/chunk: " + maxFramesPerChunk);
+        debug("Modül aktifleştirildi. Max frame: " + maxFramesPerChunk + ", Max armor stand: " + maxArmorStandsPerChunk);
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
 
-        // Map'i temizle
+        // Map'leri temizle
         frameCounts.clear();
+        armorStandCounts.clear();
 
         // Event listener'ı kaldır
         EntitySpawnEvent.getHandlerList().unregister(this);
@@ -77,9 +81,10 @@ public class FrameCrashModule extends AbstractModule implements Listener {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxFramesPerChunk = getConfigInt("chunk-basina-max-frame", 50);
+        this.maxFramesPerChunk = getConfigInt("chunk-basina-max-frame", 100);
+        this.maxArmorStandsPerChunk = getConfigInt("chunk-basina-max-armor-stand", 50);
 
-        debug("Config yüklendi: maxFrames=" + maxFramesPerChunk);
+        debug("Config yüklendi: maxFrames=" + maxFramesPerChunk + ", maxArmorStands=" + maxArmorStandsPerChunk);
     }
 
     /**
@@ -94,52 +99,50 @@ public class FrameCrashModule extends AbstractModule implements Listener {
         Entity entity = event.getEntity();
         EntityType type = entity.getType();
 
-        // Sadece item frame'leri kontrol et
-        if (type != EntityType.ITEM_FRAME && type != EntityType.GLOW_ITEM_FRAME) {
-            return;
+        // Item frame'leri kontrol et
+        if (type == EntityType.ITEM_FRAME || type == EntityType.GLOW_ITEM_FRAME) {
+            handleFrameSpawn(event, entity);
+        } 
+        // Armor stand'leri kontrol et
+        else if (type == EntityType.ARMOR_STAND) {
+            handleArmorStandSpawn(event, entity);
         }
+    }
 
+    private void handleFrameSpawn(EntitySpawnEvent event, Entity entity) {
         Chunk chunk = entity.getLocation().getChunk();
         ChunkKey key = new ChunkKey(chunk);
 
-        debug("Item frame spawn: " + type + " @ chunk " + key);
+        AtomicInteger count = frameCounts.computeIfAbsent(key, k -> new AtomicInteger(countEntitiesInChunk(chunk, EntityType.ITEM_FRAME, EntityType.GLOW_ITEM_FRAME)));
 
-        // Mevcut frame sayısını al veya oluştur
-        AtomicInteger count = frameCounts.computeIfAbsent(key, k -> {
-            // Chunk'taki mevcut frame'leri say
-            int existing = countFramesInChunk(chunk);
-            return new AtomicInteger(existing);
-        });
-
-        // Frame sayısını kontrol et
-        int currentCount = count.get();
-        if (currentCount >= maxFramesPerChunk) {
-            incrementBlockedCount();
-
-            logExploit("SYSTEM",
-                String.format("Chunk [%d,%d] frame limiti aşıldı! Mevcut: %d, Limit: %d",
-                    chunk.getX(), chunk.getZ(),
-                    currentCount, maxFramesPerChunk));
-
+        if (count.incrementAndGet() > maxFramesPerChunk) {
             event.setCancelled(true);
+            incrementBlockedCount();
             debug("Frame spawn engellendi (limit aşımı)");
-            return;
         }
-
-        // Frame sayısını artır
-        count.incrementAndGet();
-        debug("Frame sayısı artırıldı: " + count.get() + "/" + maxFramesPerChunk);
     }
 
-    /**
-     * Chunk'taki mevcut frame sayısını hesaplar
-     */
-    private int countFramesInChunk(@NotNull Chunk chunk) {
+    private void handleArmorStandSpawn(EntitySpawnEvent event, Entity entity) {
+        Chunk chunk = entity.getLocation().getChunk();
+        ChunkKey key = new ChunkKey(chunk);
+
+        AtomicInteger count = armorStandCounts.computeIfAbsent(key, k -> new AtomicInteger(countEntitiesInChunk(chunk, EntityType.ARMOR_STAND)));
+
+        if (count.incrementAndGet() > maxArmorStandsPerChunk) {
+            event.setCancelled(true);
+            incrementBlockedCount();
+            debug("Armor stand spawn engellendi (limit aşımı)");
+        }
+    }
+
+    private int countEntitiesInChunk(@NotNull Chunk chunk, EntityType... types) {
         int count = 0;
         for (Entity entity : chunk.getEntities()) {
-            EntityType type = entity.getType();
-            if (type == EntityType.ITEM_FRAME || type == EntityType.GLOW_ITEM_FRAME) {
-                count++;
+            for (EntityType type : types) {
+                if (entity.getType() == type) {
+                    count++;
+                    break;
+                }
             }
         }
         return count;
