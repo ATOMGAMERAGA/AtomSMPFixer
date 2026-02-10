@@ -1,7 +1,7 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║          v2.0.1 — False Positive Fix         ║
+# ║          v2.2.1 — False Positive Fix         ║
 # ╚══════════════════════════════════════════════╝
 
 # Genel Ayarlar
@@ -283,7 +283,7 @@ moduller:
         aktif: true
         # Handshake paketinde hostname zorunluluğu (oyna.sunucum.com gibi)
         # Botlar genellikle doğrudan IP veya localhost ile bağlanır.
-        hostname-zorunlu: true
+        hostname-zorunlu: false
         # Port tutarlılığı kontrolü
         port-kontrolu: true
       
@@ -302,7 +302,7 @@ moduller:
         # Şüpheli bağlantıları Limbo dünyasına al
         limbo-aktif: false
         # Yerçekimi testi (Oyuncunun düşüp düşmediğini kontrol eder)
-        yercekimi-testi: true
+        yercekimi-testi: false
 
     # Benzer isim kontrolü
     benzer-isim-kontrolu:

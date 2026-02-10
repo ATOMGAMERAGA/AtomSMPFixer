@@ -137,8 +137,8 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         Long requestTime = encryptionRequestTimestamps.get(address);
         if (requestTime != null) {
             long delta = System.currentTimeMillis() - requestTime;
-            // RSA/AES işlemleri ve ağ gecikmesi dahil 10ms'den kısa sürmesi imkansızdır (insan/gerçek client için)
-            if (delta < 10) { 
+            // RSA/AES işlemleri ve ağ gecikmesi dahil 5ms'den kısa sürmesi imkansızdır (insan/gerçek client için)
+            if (delta < 5) { 
                 event.setCancelled(true);
                 plugin.getLogManager().logBot("IP-" + address.getHostAddress(), 
                         address.getHostAddress(),
@@ -162,15 +162,14 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         }
 
         // Katman 1: Hostname Kontrolü
-        if (getConfigBoolean("atom-shield.handshake.hostname-zorunlu", true)) {
-            // Basit IP veya localhost kontrolü
-            if (serverAddress.equalsIgnoreCase("localhost") || serverAddress.equalsIgnoreCase("127.0.0.1") 
-                    || serverAddress.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
+        if (getConfigBoolean("atom-shield.handshake.hostname-zorunlu", false)) {
+            // Sadece boş veya localhost bağlantılarını engelle
+            if (serverAddress.isEmpty() || serverAddress.equalsIgnoreCase("localhost") || serverAddress.equalsIgnoreCase("127.0.0.1")) {
                 
                 event.setCancelled(true);
                 plugin.getLogManager().logBot("IP-" + (address != null ? address.getHostAddress() : "unknown"), 
                         (address != null ? address.getHostAddress() : "unknown"),
-                        "AtomShield: Geçersiz hostname (IP/Localhost): " + serverAddress);
+                        "AtomShield: Geçersiz hostname (Boş/Localhost): " + serverAddress);
                 return;
             }
         }
@@ -352,7 +351,7 @@ public class BotProtectionModule extends AbstractModule implements Listener {
             pendingVerification.add(player.getUniqueId());
             
             // Katman 3: Yerçekimi Testi (Gravity Check)
-            if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", true)) {
+            if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", false)) {
                 // Oyuncuyu havaya ışınla (sadece doğrulanmamışlar için)
                 // Orijinal yerini kaydetmeyelim, spawn'a düşsünler
                 player.teleport(player.getLocation().add(0, 5, 0));
@@ -383,7 +382,7 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         Player player = event.getPlayer();
         if (pendingVerification.contains(player.getUniqueId())) {
             // Katman 3: Yerçekimi Testi Kontrolü
-            if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", true)) {
+            if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", false)) {
                 // Eğer oyuncu aşağı doğru hareket etmiyorsa (veya hiç hareket etmiyorsa) doğrulanmaz
                 if (event.getTo().getY() >= event.getFrom().getY() && !player.isOnGround()) {
                     // Sadece bekliyoruz, aşağı düşmesi lazım
