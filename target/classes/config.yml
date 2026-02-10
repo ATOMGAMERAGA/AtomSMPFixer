@@ -1,7 +1,7 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║          v2.2.2 — Connection Fix             ║
+# ║          v2.2.3 — Connection Fix 2           ║
 # ╚══════════════════════════════════════════════╝
 
 # Genel Ayarlar
@@ -285,14 +285,14 @@ moduller:
         # Botlar genellikle doğrudan IP veya localhost ile bağlanır.
         hostname-zorunlu: false
         # Port tutarlılığı kontrolü
-        port-kontrolu: true
+        port-kontrolu: false
       
       # Katman 2: Protokol & Zamanlama Analizi
       protokol:
         aktif: true
         # Handshake ile Login Start arasındaki minimum süre (ms)
         # Botlar "anında" paket gönderir, insanlar JVM/Network gecikmesi yaşar.
-        min-login-gecikmesi: 10
+        min-login-gecikmesi: 0
         # Şifreleme (Encryption) zamanlaması manipülasyonu
         sifreleme-gecikmesi: false
       

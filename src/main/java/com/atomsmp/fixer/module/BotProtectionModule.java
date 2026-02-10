@@ -177,7 +177,7 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         Long handshakeTime = handshakeTimestamps.remove(user);
         if (handshakeTime != null) {
             long delta = System.currentTimeMillis() - handshakeTime;
-            int minDelta = getConfigInt("atom-shield.protokol.min-login-gecikmesi", 50);
+            int minDelta = getConfigInt("atom-shield.protokol.min-login-gecikmesi", 0);
 
             if (delta < minDelta) {
                 event.setCancelled(true);
