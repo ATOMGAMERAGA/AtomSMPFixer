@@ -85,21 +85,35 @@ Plugin şu exploit düzeltmelerini içerir:
 | **NormalizeCoordinates** | Koordinat normalleştirme | `koordinat-normallestirme` |
 | **FrameCrash** | Item frame crash engelleme | `frame-crash` |
 
-### v2.0 - Yeni Gelismis Guvenlik Modulleri
+### v2.2 - Gelişmiş Güvenlik ve Bot Koruması
 
-| Modul | Aciklama | Config Key |
+| Modül | Açıklama | Config Key |
 |-------|----------|------------|
-| **TokenBucket** | 4 kovali (hareket/sohbet/envanter/diger) token bucket rate limiter | `jeton-kovasi` |
+| **AtomShield** | Hibrit bot koruması (Handshake, Protokol, Davranış analizi) | `bot-korumasi` |
+| **FallingBlock** | Kum/Çakıl (Falling Block) sınırlandırıcı | `kum-cakil-sinirlandirici` |
+| **ExplosionLimiter** | Saniyede maksimum patlama ve blok hasarı sınırı | `patlama-sinirlandirici` |
+| **MovementSecurity** | Geçersiz koordinat (NaN/Inf) ve aşırı hızlı hareket koruması | `hareket-guvenligi` |
+| **VisualCrasher** | Havai fişek ve partikül paketi sınırlayıcı | `gorsel-crasher` |
+| **AdvancedChat** | Unicode filtreleme ve tab-complete rate limiting | `gelismis-sohbet` |
+| **PistonLimiter** | Saniyede maksimum piston hareketi ve 0-tick engelleyici | `piston-sinirlandirici` |
+| **SmartLag** | Heuristik lag tespiti ve entity/tile-entity yoğunluk analizi | `akilli-lag-tespiti` |
+| **DuplicationFix** | Gelişmiş portal ve shulker dupe koruması | `gelismis-duplikasyon` |
+
+### v2.0 - Gelişmiş Modüller
+
+| Modül | Açıklama | Config Key |
+|-------|----------|------------|
+| **TokenBucket** | 4 kovalı (hareket/sohbet/envanter/diğer) token bucket rate limiter | `jeton-kovasi` |
 | **AdvancedPayload** | Kanal whitelist, boyut limiti, brand analizi, crash client tespiti | `gelismis-payload` |
-| **NettyCrash** | Netty pipeline enjeksiyonu + NaN/Infinity/konum dogrulama | `netty-crash` |
-| **ItemSanitizer** | Item guvenlik temizleyicisi (buyu, attribute, skull, food kontrolleri) | `item-temizleyici` |
-| **BundleLock** | Slot kilitleme ile bundle race condition korumasi | `bundle-kilit` |
-| **ShulkerByte** | Shulker kutusu byte boyutu kontrolu (chunk ban koruma) | `shulker-bayt` |
-| **StorageEntityLock** | Donkey/Llama cift erisim kilidi (entity dupe koruma) | `depolama-entity-kilit` |
-| **RedstoneLimiter** | Chunk bazli redstone guncelleme sinirlandirici (anti-lag) | `redstone-sinirlandirici` |
+| **NettyCrash** | Netty pipeline enjeksiyonu + NaN/Infinity/konum doğrulama | `netty-crash` |
+| **ItemSanitizer** | Item güvenlik temizleyicisi (büyü, attribute, skull, food kontrolleri) | `item-temizleyici` |
+| **BundleLock** | Slot kilitleme ile bundle race condition koruması | `bundle-kilit` |
+| **ShulkerByte** | Shulker kutusu byte boyutu kontrolü (chunk ban koruma) | `shulker-bayt` |
+| **StorageEntityLock** | Donkey/Llama çift erişim kilidi (entity dupe koruma) | `depolama-entity-kilit` |
+| **RedstoneLimiter** | Chunk bazlı redstone güncelleme sınırlandırıcı (anti-lag) | `redstone-sinirlandirici` |
 | **ViewDistanceMask** | View distance paket maskeleme (Anti-NoCom) | `gorunum-mesafesi-maskeleme` |
 
-Her modul `config.yml` dosyasindan ayri ayri kontrol edilebilir.
+Her modül `config.yml` dosyasından ayrı ayrı kontrol edilebilir.
 
 ## 🎮 Komutlar
 
@@ -109,6 +123,7 @@ Her modul `config.yml` dosyasindan ayri ayri kontrol edilebilir.
 | `/atomfix status` | Durum, TPS ve istatistikler | `atomsmpfixer.admin` |
 | `/atomfix toggle <modül>` | Modül aç/kapa | `atomsmpfixer.admin` |
 | `/atomfix info` | Plugin bilgileri | `atomsmpfixer.admin` |
+| `/panic` | Acil durum bot koruması (min. oynama süresi altındakileri yasaklar) | `atomsmpfixer.panic` |
 
 **Kısa Komutlar:** `/af`, `/atomsmpfixer`
 
@@ -214,7 +229,7 @@ Bu proje şu anda katkıya kapalıdır. Hata bildirimleri ve öneriler için [Is
 
 ## 📝 Lisans
 
-Tüm hakları saklıdır © 2024 AtomSMP
+Tüm hakları saklıdır © 2026 AtomSMP
 
 ## 🐛 Destek
 
@@ -232,6 +247,7 @@ Tüm hakları saklıdır © 2024 AtomSMP
 ---
 
 **Geliştirici:** AtomSMP
+**Sürüm:** v2.2.1
 **Paper Sürümü:** 1.21.4
 **Java Sürümü:** 21
 **PacketEvents Sürümü:** 2.6.0+
