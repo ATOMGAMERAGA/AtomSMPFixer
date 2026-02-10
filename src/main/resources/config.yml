@@ -23,9 +23,9 @@ genel:
 # Web Panel Ayarları
 web-panel:
   # Web panelini aktif et
-  enabled: false
+  enabled: true
   # Web panel portu
-  port: 8080
+  port: 8081
   # Kimlik doğrulama (HTTP Basic Auth)
   kimlik-dogrulama:
     aktif: true
