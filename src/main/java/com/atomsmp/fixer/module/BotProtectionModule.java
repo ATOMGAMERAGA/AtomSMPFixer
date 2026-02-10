@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.handshaking.client.WrapperHandshakingClientHandshake;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerRotation;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerPositionAndRotation;
@@ -34,8 +35,9 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     // IP Address -> Offense Count
     private final Map<String, Integer> ipOffenseCount = new ConcurrentHashMap<>();
     
-    // AtomShield: Handshake and Timing tracking
-    private final Map<InetAddress, Long> handshakeTimestamps = new ConcurrentHashMap<>();
+    // AtomShield: Session tracking using User objects
+    private final Map<User, Long> handshakeTimestamps = new ConcurrentHashMap<>();
+    private final Map<User, Long> encryptionRequestTimestamps = new ConcurrentHashMap<>();
     private final Map<UUID, RotationData> playerRotations = new ConcurrentHashMap<>();
     private PacketListenerAbstract packetListener;
 
@@ -68,9 +70,8 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         onlinePlayerNames.clear();
         ipOffenseCount.clear();
         handshakeTimestamps.clear();
+        encryptionRequestTimestamps.clear();
     }
-
-    private final Map<InetAddress, Long> encryptionRequestTimestamps = new ConcurrentHashMap<>();
 
     private void registerPacketListener() {
         packetListener = new PacketListenerAbstract(PacketListenerPriority.LOWEST) {
@@ -105,71 +106,53 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     private void handleEncryptionRequest(com.github.retrooper.packetevents.event.PacketSendEvent event) {
         if (!getConfigBoolean("atom-shield.protokol.sifreleme-gecikmesi", true)) return;
 
-        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
-        if (address == null) return;
+        User user = event.getUser();
+        if (user == null) return;
 
-        // Henüz gönderilmediğini işaretle
-        if (!encryptionRequestTimestamps.containsKey(address)) {
-            encryptionRequestTimestamps.put(address, System.currentTimeMillis());
-            
-            // Gerçek paketi iptal et ve 200ms sonra tekrar gönder (simüle et)
-            // NOT: PacketEvents ile paketi geciktirmek için schedule kullanıyoruz
-            /*
-            event.setCancelled(true);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    // Tekrar gönderim logic'i buraya gelir
-                    // Ancak bu Minecraft state machine'i bozabilir.
-                    // Şimdilik sadece zaman damgası alalım ve response zamanını kontrol edelim.
-                }
-            }.runTaskLaterAsynchronously(plugin, 4L); // ~200ms
-            */
-        }
+        encryptionRequestTimestamps.put(user, System.currentTimeMillis());
+        debug("Encryption Request sent to " + user.getAddress());
     }
 
     private void handleEncryptionResponse(PacketReceiveEvent event) {
         if (!getConfigBoolean("atom-shield.protokol.sifreleme-gecikmesi", true)) return;
 
-        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
-        if (address == null) return;
+        User user = event.getUser();
+        if (user == null) return;
 
-        Long requestTime = encryptionRequestTimestamps.get(address);
+        Long requestTime = encryptionRequestTimestamps.remove(user);
         if (requestTime != null) {
             long delta = System.currentTimeMillis() - requestTime;
             // RSA/AES işlemleri ve ağ gecikmesi dahil 5ms'den kısa sürmesi imkansızdır (insan/gerçek client için)
             if (delta < 5) { 
                 event.setCancelled(true);
-                plugin.getLogManager().logBot("IP-" + address.getHostAddress(), 
-                        address.getHostAddress(),
+                user.closeConnection();
+                String ip = user.getAddress().getAddress().getHostAddress();
+                plugin.getLogManager().logBot("IP-" + ip, ip,
                         "AtomShield: Şüpheli Şifreleme Yanıtı (Çok Hızlı). Delta: " + delta + "ms");
-                handleOffense("Bot-IP-" + address.getHostAddress(), address.getHostAddress());
+                handleOffense("Bot-IP-" + ip, ip);
             }
-            encryptionRequestTimestamps.remove(address);
         }
     }
 
     private void handleHandshake(PacketReceiveEvent event) {
         if (!getConfigBoolean("atom-shield.handshake.aktif", true)) return;
 
+        User user = event.getUser();
+        if (user == null) return;
+
+        handshakeTimestamps.put(user, System.currentTimeMillis());
+
         WrapperHandshakingClientHandshake handshake = new WrapperHandshakingClientHandshake(event);
         String serverAddress = handshake.getServerAddress();
         int serverPort = handshake.getServerPort();
-        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
-
-        if (address != null) {
-            handshakeTimestamps.put(address, System.currentTimeMillis());
-        }
+        String ip = user.getAddress().getAddress().getHostAddress();
 
         // Katman 1: Hostname Kontrolü
         if (getConfigBoolean("atom-shield.handshake.hostname-zorunlu", false)) {
-            // Sadece boş veya localhost bağlantılarını engelle
             if (serverAddress.isEmpty() || serverAddress.equalsIgnoreCase("localhost") || serverAddress.equalsIgnoreCase("127.0.0.1")) {
-                
                 event.setCancelled(true);
-                plugin.getLogManager().logBot("IP-" + (address != null ? address.getHostAddress() : "unknown"), 
-                        (address != null ? address.getHostAddress() : "unknown"),
-                        "AtomShield: Geçersiz hostname (Boş/Localhost): " + serverAddress);
+                user.closeConnection();
+                plugin.getLogManager().logBot("IP-" + ip, ip, "AtomShield: Geçersiz hostname: " + serverAddress);
                 return;
             }
         }
@@ -177,11 +160,10 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         // Katman 1: Port Kontrolü
         if (getConfigBoolean("atom-shield.handshake.port-kontrolu", true)) {
             int defaultPort = Bukkit.getPort();
-            if (serverPort != defaultPort && serverPort != 0) { // Some proxies use 0 or default
+            if (serverPort != defaultPort && serverPort != 0) { 
                 event.setCancelled(true);
-                plugin.getLogManager().logBot("IP-" + (address != null ? address.getHostAddress() : "unknown"), 
-                        (address != null ? address.getHostAddress() : "unknown"),
-                        "AtomShield: Geçersiz port: " + serverPort);
+                user.closeConnection();
+                plugin.getLogManager().logBot("IP-" + ip, ip, "AtomShield: Geçersiz port: " + serverPort);
             }
         }
     }
@@ -189,24 +171,23 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     private void handleLoginStart(PacketReceiveEvent event) {
         if (!getConfigBoolean("atom-shield.protokol.aktif", true)) return;
 
-        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
-        if (address == null) return;
+        User user = event.getUser();
+        if (user == null) return;
 
-        Long handshakeTime = handshakeTimestamps.get(address);
+        Long handshakeTime = handshakeTimestamps.remove(user);
         if (handshakeTime != null) {
             long delta = System.currentTimeMillis() - handshakeTime;
             int minDelta = getConfigInt("atom-shield.protokol.min-login-gecikmesi", 50);
 
             if (delta < minDelta) {
                 event.setCancelled(true);
-                plugin.getLogManager().logBot("IP-" + address.getHostAddress(), 
-                        address.getHostAddress(),
+                user.closeConnection();
+                String ip = user.getAddress().getAddress().getHostAddress();
+                plugin.getLogManager().logBot("IP-" + ip, ip,
                         "AtomShield: Hızlı Login tespiti (Instant-Join). Gecikme: " + delta + "ms");
                 
-                // Track offense for immediate ban if too aggressive
-                handleOffense("Bot-IP-" + address.getHostAddress(), address.getHostAddress());
+                handleOffense("Bot-IP-" + ip, ip);
             }
-            handshakeTimestamps.remove(address); // Cleanup
         }
     }
 

@@ -247,7 +247,7 @@ Tüm hakları saklıdır © 2026 AtomSMP
 ---
 
 **Geliştirici:** AtomSMP
-**Sürüm:** v2.2.1
+**Sürüm:** v2.2.2
 **Paper Sürümü:** 1.21.4
 **Java Sürümü:** 21
 **PacketEvents Sürümü:** 2.6.0+

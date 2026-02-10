@@ -1,7 +1,7 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║          v2.2.1 — False Positive Fix         ║
+# ║          v2.2.2 — Connection Fix             ║
 # ╚══════════════════════════════════════════════╝
 
 # Genel Ayarlar
@@ -292,9 +292,9 @@ moduller:
         aktif: true
         # Handshake ile Login Start arasındaki minimum süre (ms)
         # Botlar "anında" paket gönderir, insanlar JVM/Network gecikmesi yaşar.
-        min-login-gecikmesi: 50
+        min-login-gecikmesi: 10
         # Şifreleme (Encryption) zamanlaması manipülasyonu
-        sifreleme-gecikmesi: true
+        sifreleme-gecikmesi: false
       
       # Katman 3: Davranışsal Analiz (Limbo)
       davranissal:

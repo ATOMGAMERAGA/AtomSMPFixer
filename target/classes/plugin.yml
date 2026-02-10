@@ -1,5 +1,5 @@
 name: AtomSMPFixer
-version: '2.2.1'
+version: '2.2.2'
 main: com.atomsmp.fixer.AtomSMPFixer
 api-version: '1.21'
 description: "Gelişmiş exploit düzeltme ve sunucu koruma plugini"
