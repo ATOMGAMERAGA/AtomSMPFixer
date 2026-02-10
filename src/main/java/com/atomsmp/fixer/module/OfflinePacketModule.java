@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,9 +25,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Grace period (tolerans süresi)
  * - Login tracking
  * - Offline paket engelleme
+ * - IP ve Socket kanalı doğrulaması
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 1.1.0
  */
 public class OfflinePacketModule extends AbstractModule {
 
@@ -34,6 +36,8 @@ public class OfflinePacketModule extends AbstractModule {
 
     // Oyuncu login zamanlarını saklayan map
     private final Map<UUID, Long> loginTimes;
+    // Oyuncu IP adreslerini saklayan map
+    private final Map<UUID, InetAddress> playerAddresses;
 
     // Config cache
     private long toleranceMs;
@@ -46,6 +50,7 @@ public class OfflinePacketModule extends AbstractModule {
     public OfflinePacketModule(@NotNull AtomSMPFixer plugin) {
         super(plugin, "cevrimdisi-paket", "Çevrimdışı paket kontrolü");
         this.loginTimes = new ConcurrentHashMap<>();
+        this.playerAddresses = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -67,9 +72,12 @@ public class OfflinePacketModule extends AbstractModule {
             .getEventManager()
             .registerListener(listener);
 
-        // Online oyuncuların login time'ını kaydet
+        // Online oyuncuların bilgilerini kaydet
         for (Player player : Bukkit.getOnlinePlayers()) {
             loginTimes.put(player.getUniqueId(), System.currentTimeMillis());
+            if (player.getAddress() != null) {
+                playerAddresses.put(player.getUniqueId(), player.getAddress().getAddress());
+            }
         }
 
         debug("Modül aktifleştirildi. Tolerans süresi: " + toleranceMs + "ms");
@@ -86,8 +94,9 @@ public class OfflinePacketModule extends AbstractModule {
                 .unregisterListener(listener);
         }
 
-        // Login time'ları temizle
+        // Verileri temizle
         loginTimes.clear();
+        playerAddresses.clear();
 
         debug("Modül devre dışı bırakıldı.");
     }
@@ -121,11 +130,25 @@ public class OfflinePacketModule extends AbstractModule {
         }
 
         UUID uuid = player.getUniqueId();
+        InetAddress currentAddr = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
 
-        // Login time kaydı yoksa ekle (ilk Play paketi geldiğinde)
-        loginTimes.putIfAbsent(uuid, System.currentTimeMillis());
+        // Login verisi yoksa ekle (ilk Play paketi geldiğinde)
+        if (!loginTimes.containsKey(uuid)) {
+            loginTimes.put(uuid, System.currentTimeMillis());
+            if (currentAddr != null) playerAddresses.put(uuid, currentAddr);
+        }
 
-        // Grace period kontrolü - yeni giriş yapan oyuncuları engelleme
+        // 1. IP Doğrulaması (Session Hijacking / Offline Injection önleme)
+        InetAddress loginAddr = playerAddresses.get(uuid);
+        if (loginAddr != null && currentAddr != null && !loginAddr.equals(currentAddr)) {
+            incrementBlockedCount();
+            logExploit(player.getName(), String.format("IP Uyuşmazlığı! Login IP: %s, Paket IP: %s", 
+                    loginAddr.getHostAddress(), currentAddr.getHostAddress()));
+            event.setCancelled(true);
+            return;
+        }
+
+        // 2. Grace period kontrolü - yeni giriş yapan oyuncuları engelleme
         Long loginTime = loginTimes.get(uuid);
         if (loginTime != null) {
             long timeSinceLogin = System.currentTimeMillis() - loginTime;
@@ -152,9 +175,10 @@ public class OfflinePacketModule extends AbstractModule {
     /**
      * Oyuncu login olduğunda çağrılır
      */
-    public void onPlayerLogin(@NotNull UUID uuid) {
+    public void onPlayerLogin(@NotNull UUID uuid, @NotNull InetAddress address) {
         loginTimes.put(uuid, System.currentTimeMillis());
-        debug("Login time kaydedildi: " + uuid);
+        playerAddresses.put(uuid, address);
+        debug("Login bilgileri kaydedildi: " + uuid + " (" + address.getHostAddress() + ")");
     }
 
     /**
@@ -162,7 +186,8 @@ public class OfflinePacketModule extends AbstractModule {
      */
     public void onPlayerLogout(@NotNull UUID uuid) {
         loginTimes.remove(uuid);
-        debug("Login time kaldırıldı: " + uuid);
+        playerAddresses.remove(uuid);
+        debug("Login bilgileri kaldırıldı: " + uuid);
     }
 
     /**

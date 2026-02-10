@@ -162,6 +162,28 @@ public class CustomPayloadModule extends AbstractModule {
                 return;
             }
 
+            // Register/Unregister kanal sayısı kontrolü
+            if (channelName.equals("minecraft:register") || channelName.equals("minecraft:unregister")) {
+                String channels = new String(data, java.nio.charset.StandardCharsets.UTF_8);
+                String[] parts = channels.split("\0");
+                if (parts.length > 100) { // Limit: 100 channels per packet
+                    incrementBlockedCount();
+                    logExploit(player.getName(), "Çok fazla kanal kaydı/silme isteği: " + parts.length);
+                    event.setCancelled(true);
+                    return;
+                }
+                
+                // Kaydedilen kanalların da whitelist kontrolünden geçmesi gerekebilir
+                for (String c : parts) {
+                    if (c.length() > 256) {
+                        incrementBlockedCount();
+                        logExploit(player.getName(), "Çok uzun kanal ismi: " + c.length());
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+            }
+
             // Boyut kontrolü
             if (data.length > maxPayloadSize) {
                 incrementBlockedCount();

@@ -284,6 +284,10 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.AdvancedChatModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.PistonLimiterModule(this));
 
+        // v2.3 — Rapor Gereksinimleri
+        moduleManager.registerModule(new com.atomsmp.fixer.module.SmartLagModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.DuplicationFixModule(this));
+
         getLogger().info("Toplam " + moduleManager.getTotalModuleCount() + " modül kaydedildi.");
     }
 

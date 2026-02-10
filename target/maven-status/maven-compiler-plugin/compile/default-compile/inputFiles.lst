@@ -24,6 +24,7 @@
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/CreativeItemsModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/CustomPayloadModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/DispenserCrasherModule.java
+/root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/DuplicationFixModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/ExplosionLimiterModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/FallingBlockLimiterModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/FrameCrashModule.java
@@ -45,6 +46,7 @@
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/RedstoneLimiterModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/ShulkerByteModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/SignCrasherModule.java
+/root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/SmartLagModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/StorageEntityLockModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/TokenBucketModule.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/module/TooManyBooksModule.java
@@ -57,6 +59,7 @@
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/NBTUtils.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/PacketUtils.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/PerformanceMonitor.java
+/root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/RecursiveNBTScanner.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/TokenBucket.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/checks/AttributeCheck.java
 /root/AtomSMPFixer/src/main/java/com/atomsmp/fixer/util/checks/EnchantmentCheck.java

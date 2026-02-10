@@ -2,6 +2,14 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.BotUtils;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.handshaking.client.WrapperHandshakingClientHandshake;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerRotation;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerPositionAndRotation;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -25,6 +33,11 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     private final Set<String> onlinePlayerNames = ConcurrentHashMap.newKeySet();
     // IP Address -> Offense Count
     private final Map<String, Integer> ipOffenseCount = new ConcurrentHashMap<>();
+    
+    // AtomShield: Handshake and Timing tracking
+    private final Map<InetAddress, Long> handshakeTimestamps = new ConcurrentHashMap<>();
+    private final Map<UUID, RotationData> playerRotations = new ConcurrentHashMap<>();
+    private PacketListenerAbstract packetListener;
 
     public BotProtectionModule(AtomSMPFixer plugin) {
         super(plugin, "bot-korumasi", "Bot algılama ve koruma modülü");
@@ -34,6 +47,10 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     public void onEnable() {
         super.onEnable();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        
+        // PacketEvents listener for AtomShield
+        registerPacketListener();
+
         // Populate initially
         for (Player p : Bukkit.getOnlinePlayers()) {
             onlinePlayerNames.add(p.getName());
@@ -44,9 +61,224 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     public void onDisable() {
         super.onDisable();
         HandlerList.unregisterAll(this);
+        if (packetListener != null) {
+            PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
+        }
         pendingVerification.clear();
         onlinePlayerNames.clear();
         ipOffenseCount.clear();
+        handshakeTimestamps.clear();
+    }
+
+    private final Map<InetAddress, Long> encryptionRequestTimestamps = new ConcurrentHashMap<>();
+
+    private void registerPacketListener() {
+        packetListener = new PacketListenerAbstract(PacketListenerPriority.LOWEST) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                if (!isEnabled()) return;
+
+                if (event.getPacketType() == PacketType.Handshaking.Client.HANDSHAKE) {
+                    handleHandshake(event);
+                } else if (event.getPacketType() == PacketType.Login.Client.LOGIN_START) {
+                    handleLoginStart(event);
+                } else if (event.getPacketType() == PacketType.Login.Client.ENCRYPTION_RESPONSE) {
+                    handleEncryptionResponse(event);
+                } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_ROTATION || 
+                           event.getPacketType() == PacketType.Play.Client.PLAYER_POSITION_AND_ROTATION) {
+                    handleRotation(event);
+                }
+            }
+
+            @Override
+            public void onPacketSend(com.github.retrooper.packetevents.event.PacketSendEvent event) {
+                if (!isEnabled()) return;
+
+                if (event.getPacketType() == PacketType.Login.Server.ENCRYPTION_REQUEST) {
+                    handleEncryptionRequest(event);
+                }
+            }
+        };
+        PacketEvents.getAPI().getEventManager().registerListener(packetListener);
+    }
+
+    private void handleEncryptionRequest(com.github.retrooper.packetevents.event.PacketSendEvent event) {
+        if (!getConfigBoolean("atom-shield.protokol.sifreleme-gecikmesi", true)) return;
+
+        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
+        if (address == null) return;
+
+        // Henüz gönderilmediğini işaretle
+        if (!encryptionRequestTimestamps.containsKey(address)) {
+            encryptionRequestTimestamps.put(address, System.currentTimeMillis());
+            
+            // Gerçek paketi iptal et ve 200ms sonra tekrar gönder (simüle et)
+            // NOT: PacketEvents ile paketi geciktirmek için schedule kullanıyoruz
+            /*
+            event.setCancelled(true);
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    // Tekrar gönderim logic'i buraya gelir
+                    // Ancak bu Minecraft state machine'i bozabilir.
+                    // Şimdilik sadece zaman damgası alalım ve response zamanını kontrol edelim.
+                }
+            }.runTaskLaterAsynchronously(plugin, 4L); // ~200ms
+            */
+        }
+    }
+
+    private void handleEncryptionResponse(PacketReceiveEvent event) {
+        if (!getConfigBoolean("atom-shield.protokol.sifreleme-gecikmesi", true)) return;
+
+        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
+        if (address == null) return;
+
+        Long requestTime = encryptionRequestTimestamps.get(address);
+        if (requestTime != null) {
+            long delta = System.currentTimeMillis() - requestTime;
+            // RSA/AES işlemleri ve ağ gecikmesi dahil 10ms'den kısa sürmesi imkansızdır (insan/gerçek client için)
+            if (delta < 10) { 
+                event.setCancelled(true);
+                plugin.getLogManager().logBot("IP-" + address.getHostAddress(), 
+                        address.getHostAddress(),
+                        "AtomShield: Şüpheli Şifreleme Yanıtı (Çok Hızlı). Delta: " + delta + "ms");
+                handleOffense("Bot-IP-" + address.getHostAddress(), address.getHostAddress());
+            }
+            encryptionRequestTimestamps.remove(address);
+        }
+    }
+
+    private void handleHandshake(PacketReceiveEvent event) {
+        if (!getConfigBoolean("atom-shield.handshake.aktif", true)) return;
+
+        WrapperHandshakingClientHandshake handshake = new WrapperHandshakingClientHandshake(event);
+        String serverAddress = handshake.getServerAddress();
+        int serverPort = handshake.getServerPort();
+        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
+
+        if (address != null) {
+            handshakeTimestamps.put(address, System.currentTimeMillis());
+        }
+
+        // Katman 1: Hostname Kontrolü
+        if (getConfigBoolean("atom-shield.handshake.hostname-zorunlu", true)) {
+            // Basit IP veya localhost kontrolü
+            if (serverAddress.equalsIgnoreCase("localhost") || serverAddress.equalsIgnoreCase("127.0.0.1") 
+                    || serverAddress.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
+                
+                event.setCancelled(true);
+                plugin.getLogManager().logBot("IP-" + (address != null ? address.getHostAddress() : "unknown"), 
+                        (address != null ? address.getHostAddress() : "unknown"),
+                        "AtomShield: Geçersiz hostname (IP/Localhost): " + serverAddress);
+                return;
+            }
+        }
+
+        // Katman 1: Port Kontrolü
+        if (getConfigBoolean("atom-shield.handshake.port-kontrolu", true)) {
+            int defaultPort = Bukkit.getPort();
+            if (serverPort != defaultPort && serverPort != 0) { // Some proxies use 0 or default
+                event.setCancelled(true);
+                plugin.getLogManager().logBot("IP-" + (address != null ? address.getHostAddress() : "unknown"), 
+                        (address != null ? address.getHostAddress() : "unknown"),
+                        "AtomShield: Geçersiz port: " + serverPort);
+            }
+        }
+    }
+
+    private void handleLoginStart(PacketReceiveEvent event) {
+        if (!getConfigBoolean("atom-shield.protokol.aktif", true)) return;
+
+        InetAddress address = event.getSocketAddress() instanceof java.net.InetSocketAddress isa ? isa.getAddress() : null;
+        if (address == null) return;
+
+        Long handshakeTime = handshakeTimestamps.get(address);
+        if (handshakeTime != null) {
+            long delta = System.currentTimeMillis() - handshakeTime;
+            int minDelta = getConfigInt("atom-shield.protokol.min-login-gecikmesi", 50);
+
+            if (delta < minDelta) {
+                event.setCancelled(true);
+                plugin.getLogManager().logBot("IP-" + address.getHostAddress(), 
+                        address.getHostAddress(),
+                        "AtomShield: Hızlı Login tespiti (Instant-Join). Gecikme: " + delta + "ms");
+                
+                // Track offense for immediate ban if too aggressive
+                handleOffense("Bot-IP-" + address.getHostAddress(), address.getHostAddress());
+            }
+            handshakeTimestamps.remove(address); // Cleanup
+        }
+    }
+
+    private void handleRotation(PacketReceiveEvent event) {
+        if (!(event.getPlayer() instanceof Player player)) return;
+        if (!getConfigBoolean("atom-shield.davranissal.rotasyon-analizi", true)) return;
+
+        float yaw, pitch;
+        if (event.getPacketType() == PacketType.Play.Client.PLAYER_ROTATION) {
+            WrapperPlayClientPlayerRotation packet = new WrapperPlayClientPlayerRotation(event);
+            yaw = packet.getYaw();
+            pitch = packet.getPitch();
+        } else {
+            WrapperPlayClientPlayerPositionAndRotation packet = new WrapperPlayClientPlayerPositionAndRotation(event);
+            yaw = packet.getYaw();
+            pitch = packet.getPitch();
+        }
+
+        UUID uuid = player.getUniqueId();
+        RotationData data = playerRotations.computeIfAbsent(uuid, k -> new RotationData());
+
+        float deltaYaw = Math.abs(yaw - data.lastYaw);
+        float deltaPitch = Math.abs(pitch - data.lastPitch);
+
+        // 1. Snap Check (Ani ve büyük dönüş)
+        if (deltaYaw > 100 || deltaPitch > 100) {
+            // Sadece bir kez uyar, spam yapma
+            if (System.currentTimeMillis() - data.lastViolationTime > 2000) {
+                debug("Snap Rotation tespiti: " + player.getName() + " (Yaw Delta: " + deltaYaw + ")");
+                data.lastViolationTime = System.currentTimeMillis();
+            }
+        }
+
+        // 2. GCD Analizi (Bot/Hile Tespiti)
+        if (deltaPitch > 0 && deltaPitch < 30) {
+            long expandedPitch = (long) (deltaPitch * Math.pow(2, 24));
+            long lastExpandedPitch = (long) (data.lastDeltaPitch * Math.pow(2, 24));
+            long gcd = getGcd(expandedPitch, lastExpandedPitch);
+
+            if (gcd < 131072) { // Çok düşük GCD = insan dışı hassasiyet veya bot
+                data.gcdViolations++;
+                if (data.gcdViolations > 20) {
+                    plugin.getLogManager().logBot(player.getName(), 
+                            player.getAddress().getAddress().getHostAddress(), 
+                            "AtomShield: Anormal Fare Hareketi (GCD Analizi)");
+                    data.gcdViolations = 0;
+                }
+            }
+        }
+
+        data.lastYaw = yaw;
+        data.lastPitch = pitch;
+        data.lastDeltaPitch = deltaPitch;
+    }
+
+    private long getGcd(long a, long b) {
+        while (b > 0) {
+            a %= b;
+            long temp = a;
+            a = b;
+            b = temp;
+        }
+        return a;
+    }
+
+    private static class RotationData {
+        float lastYaw = 0;
+        float lastPitch = 0;
+        float lastDeltaPitch = 0;
+        int gcdViolations = 0;
+        long lastViolationTime = 0;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -85,7 +317,8 @@ public class BotProtectionModule extends AbstractModule implements Listener {
                 ChatColor.RED + "Bot saldırısı şüphesi (Benzer isimler).");
             
             incrementBlockedCount();
-            logExploit(name, "Benzer isim saldırısı tespit edildi. Benzerler: " + similarPlayers.size());
+            plugin.getLogManager().logBot(name, event.getAddress().getHostAddress(), 
+                    "Benzer isim saldırısı tespit edildi. Benzerler: " + similarPlayers.size());
 
             // Ban others on main thread
             new BukkitRunnable() {
@@ -118,6 +351,14 @@ public class BotProtectionModule extends AbstractModule implements Listener {
 
             pendingVerification.add(player.getUniqueId());
             
+            // Katman 3: Yerçekimi Testi (Gravity Check)
+            if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", true)) {
+                // Oyuncuyu havaya ışınla (sadece doğrulanmamışlar için)
+                // Orijinal yerini kaydetmeyelim, spawn'a düşsünler
+                player.teleport(player.getLocation().add(0, 5, 0));
+                debug("Yerçekimi testi başlatıldı: " + player.getName());
+            }
+
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', 
                 getConfigString("dogrulama.dogrulama-mesaji", "&cLütfen doğrulamak için hareket edin!")));
 
@@ -141,6 +382,15 @@ public class BotProtectionModule extends AbstractModule implements Listener {
 
         Player player = event.getPlayer();
         if (pendingVerification.contains(player.getUniqueId())) {
+            // Katman 3: Yerçekimi Testi Kontrolü
+            if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", true)) {
+                // Eğer oyuncu aşağı doğru hareket etmiyorsa (veya hiç hareket etmiyorsa) doğrulanmaz
+                if (event.getTo().getY() >= event.getFrom().getY() && !player.isOnGround()) {
+                    // Sadece bekliyoruz, aşağı düşmesi lazım
+                    return;
+                }
+            }
+
             // Check if actual movement occurred (threshold 0.1 blocks)
             if (event.getFrom().getWorld() != event.getTo().getWorld()) return;
             double distanceSq = event.getFrom().distanceSquared(event.getTo());
@@ -166,7 +416,7 @@ public class BotProtectionModule extends AbstractModule implements Listener {
 
         if (offenses == 1) {
             // First offense is just the kick (handled by timeout usually)
-            logExploit(playerName, "Bot şüphesi: İlk ihlal (IP: " + ip + ")");
+            plugin.getLogManager().logBot(playerName, ip, "Bot şüphesi: İlk ihlal");
         } else if (offenses >= 2) {
             // Second offense -> BAN
             performBan(playerName, ip);
@@ -188,6 +438,6 @@ public class BotProtectionModule extends AbstractModule implements Listener {
             }
         }.runTask(plugin);
         
-        logExploit(playerName, "Bot olarak algılandı ve yasaklandı. IP: " + ip);
+        plugin.getLogManager().logBot(playerName, ip, "Bot olarak algılandı ve yasaklandı.");
     }
 }

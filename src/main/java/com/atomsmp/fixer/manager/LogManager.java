@@ -360,6 +360,19 @@ public class LogManager {
     }
 
     /**
+     * Bot saldırısı logu
+     *
+     * @param playerName Oyuncu adı
+     * @param ip IP adresi
+     * @param reason Sebep
+     */
+    public void logBot(@NotNull String playerName, @NotNull String ip, @NotNull String reason) {
+        String message = String.format("BOT: %s | IP: %s | Sebep: %s",
+            playerName, ip, reason);
+        log(LogLevel.WARNING, message);
+    }
+
+    /**
      * Log entry sınıfı
      */
     private static class LogEntry {

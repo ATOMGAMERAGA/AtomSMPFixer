@@ -6,8 +6,10 @@ import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEditBook;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import java.util.List;
 
 /**
  * Kitap Crash Modülü
@@ -21,9 +23,10 @@ import org.jetbrains.annotations.NotNull;
  * - Maksimum sayfa boyutu kontrolü
  * - Maksimum toplam kitap boyutu kontrolü
  * - WrapperPlayClientEditBook kullanımı
+ * - Unicode ve JSON sanitasyonu
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 1.1.0
  */
 public class BookCrasherModule extends AbstractModule {
 
@@ -114,46 +117,61 @@ public class BookCrasherModule extends AbstractModule {
         }
 
         try {
-            // Note: PacketEvents'in EditBook wrapper'ı için spesifik implementasyon gerekebilir
-            // Şimdilik temel kontrol yapıyoruz
+            WrapperPlayClientEditBook packet = new WrapperPlayClientEditBook(event);
+            List<String> pages = packet.getPages();
+            String title = packet.getTitle();
 
-            debug(player.getName() + " kitap düzenliyor");
-
-            // Oyuncunun elindeki item'ı kontrol et
-            org.bukkit.inventory.ItemStack item = player.getInventory().getItemInMainHand();
-            if (!BookUtils.isBook(item)) {
-                item = player.getInventory().getItemInOffHand();
-            }
-
-            if (!BookUtils.isBook(item)) {
-                debug("Oyuncunun elinde kitap yok");
+            // 1. Sayfa Sayısı Kontrolü
+            if (pages.size() > maxPageCount) {
+                cancelBook(event, player, "Çok fazla sayfa: " + pages.size());
                 return;
             }
 
-            // Kitabın güvenli olup olmadığını kontrol et
-            if (!BookUtils.isBookSafe(item, maxTitleLength, maxPageCount, maxPageSize, maxTotalBookSize)) {
-                incrementBlockedCount();
+            // 2. Başlık Kontrolü
+            if (title != null && title.length() > maxTitleLength) {
+                cancelBook(event, player, "Çok uzun başlık: " + title.length());
+                return;
+            }
 
-                int pageCount = BookUtils.getPageCount(item);
-                int bookSize = BookUtils.calculateBookSize(item);
+            // 3. İçerik ve Boyut Kontrolü
+            int currentTotalSize = 0;
+            for (String page : pages) {
+                if (page.length() > maxPageSize) {
+                    cancelBook(event, player, "Çok uzun sayfa: " + page.length());
+                    return;
+                }
+                
+                if (BookUtils.hasUnsafeContent(page)) {
+                    cancelBook(event, player, "Zararlı sayfa içeriği tespit edildi!");
+                    return;
+                }
+                
+                currentTotalSize += page.length() * 2;
+            }
 
-                logExploit(player.getName(),
-                    String.format("Zararlı kitap tespit edildi! Sayfa: %d (limit: %d), Boyut: %d (limit: %d)",
-                        pageCount, maxPageCount,
-                        bookSize, maxTotalBookSize));
+            if (currentTotalSize > maxTotalBookSize) {
+                cancelBook(event, player, "Çok büyük toplam kitap boyutu: " + currentTotalSize);
+                return;
+            }
 
-                event.setCancelled(true);
-                player.closeInventory();
-
-                // Oyuncuya mesaj gönder
-                player.sendMessage(plugin.getMessageManager().getMessage("kitap-engellendi"));
-
-                debug(player.getName() + " için kitap engellendi");
+            // 4. Survival oyuncuları için JSON sanitasyonu (Opsiyonel — eğer yetkisi yoksa)
+            if (!player.isOp()) {
+                // Not: PacketEvents'te paket verisini manipüle etmek için event.setCancelled(true) 
+                // ve yeni paket göndermek veya packet.setPages() kullanmak gerekir.
+                // Şimdilik sadece tehlikeliyse engelliyoruz.
             }
 
         } catch (Exception e) {
             error("EditBook paketi işlenirken hata: " + e.getMessage());
         }
+    }
+
+    private void cancelBook(PacketReceiveEvent event, Player player, String reason) {
+        incrementBlockedCount();
+        logExploit(player.getName(), "Zararlı Kitap: " + reason);
+        event.setCancelled(true);
+        player.closeInventory();
+        player.sendMessage(plugin.getMessageManager().getMessage("engelleme.kitap-crash"));
     }
 
     /**

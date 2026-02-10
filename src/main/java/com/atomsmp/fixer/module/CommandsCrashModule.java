@@ -1,6 +1,12 @@
 package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListenerAbstract;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,6 +49,8 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
         this.blockedPatterns = new ArrayList<>();
     }
 
+    private PacketListenerAbstract packetListener;
+
     @Override
     public void onEnable() {
         super.onEnable();
@@ -53,6 +61,28 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
         // Event listener kaydet
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
+        // PacketEvents listener
+        packetListener = new PacketListenerAbstract(PacketListenerPriority.LOWEST) {
+            @Override
+            public void onPacketReceive(PacketReceiveEvent event) {
+                if (!isEnabled()) return;
+
+                if (event.getPacketType() == PacketType.Play.Client.UPDATE_JIGSAW_BLOCK || 
+                    event.getPacketType() == PacketType.Play.Client.UPDATE_STRUCTURE_BLOCK) {
+                    
+                    if (!(event.getPlayer() instanceof Player player)) return;
+
+                    // Survival oyuncusu bu paketleri gönderemez!
+                    if (player.getGameMode() != GameMode.CREATIVE || !player.isOp()) {
+                        event.setCancelled(true);
+                        incrementBlockedCount();
+                        logExploit(player.getName(), "Yetkisiz Jigsaw/Structure Block güncelleme girişimi!");
+                    }
+                }
+            }
+        };
+        PacketEvents.getAPI().getEventManager().registerListener(packetListener);
+
         debug("Modül aktifleştirildi. Engellenecek pattern sayısı: " + blockedPatterns.size());
     }
 
@@ -62,6 +92,10 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
 
         // Pattern'lari temizle
         blockedPatterns.clear();
+
+        if (packetListener != null) {
+            PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
+        }
 
         // Event listener'ı kaldır
         PlayerCommandPreprocessEvent.getHandlerList().unregister(this);

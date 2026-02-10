@@ -50,8 +50,8 @@ public class BukkitListener implements Listener {
 
         // OfflinePacketModule'e login bildirimi
         OfflinePacketModule offlineModule = plugin.getModuleManager().getModule(OfflinePacketModule.class);
-        if (offlineModule != null) {
-            offlineModule.onPlayerLogin(player.getUniqueId());
+        if (offlineModule != null && player.getAddress() != null) {
+            offlineModule.onPlayerLogin(player.getUniqueId(), player.getAddress().getAddress());
         }
     }
 

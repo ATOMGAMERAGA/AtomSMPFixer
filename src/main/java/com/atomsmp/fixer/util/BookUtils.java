@@ -244,7 +244,41 @@ public class BookUtils {
             return true;
         }
 
+        // JSON command injection kontrolü (basit kontrol)
+        String lowerPage = page.toLowerCase();
+        if (lowerPage.contains("clickevent") && lowerPage.contains("run_command")) {
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * Sayfa içeriğindeki zararlı JSON/Komut yapılarını temizler.
+     * 
+     * @param content Sayfa içeriği
+     * @return Temizlenmiş içerik
+     */
+    public static String sanitizeContent(String content) {
+        if (content == null || content.isEmpty()) return content;
+        
+        // 1. Kontrol karakterlerini temizle (Newline ve Tab hariç)
+        StringBuilder sb = new StringBuilder();
+        for (char c : content.toCharArray()) {
+            if (c == '\n' || c == '\r' || c == '\t' || (c >= 32 && c <= 65533)) {
+                sb.append(c);
+            }
+        }
+        String cleaned = sb.toString();
+
+        // 2. JSON Komutlarını temizle (Survival oyuncuları için basitleştir)
+        // Eğer içerik bir JSON objesi gibi görünüyorsa:
+        if (cleaned.contains("{") && cleaned.contains("}")) {
+            cleaned = cleaned.replaceAll("(?i)\"clickEvent\"\\s*:\\s*\\{[^\\}]+\\}", "\"clickEvent\":{}");
+            cleaned = cleaned.replaceAll("(?i)\"hoverEvent\"\\s*:\\s*\\{[^\\}]+\\}", "\"hoverEvent\":{}");
+        }
+        
+        return cleaned;
     }
 
     /**

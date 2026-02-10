@@ -133,6 +133,16 @@ public class NBTCrasherModule extends AbstractModule {
 
             debug(player.getName() + " creative item gönderdi");
 
+            // 1. Packet-Level NBT Kontrolü (Daha güvenli — crash'i önler)
+            if (peItem.getNBT() != null) {
+                if (!com.atomsmp.fixer.util.RecursiveNBTScanner.isSafe(peItem.getNBT(), maxNBTDepth, maxNBTTags)) {
+                    incrementBlockedCount();
+                    event.setCancelled(true);
+                    logExploit(player.getName(), "Zararlı NBT (Creative Paket Seviyesi) tespit edildi!");
+                    return;
+                }
+            }
+
             // NBT kontrolü - Paketten gelen item'ı kontrol et
             ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
             if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
@@ -160,6 +170,16 @@ public class NBTCrasherModule extends AbstractModule {
             com.github.retrooper.packetevents.protocol.item.ItemStack peItem = packet.getCarriedItemStack();
             if (peItem == null || peItem.isEmpty()) {
                 return;
+            }
+
+            // 1. Packet-Level NBT Kontrolü
+            if (peItem.getNBT() != null) {
+                if (!com.atomsmp.fixer.util.RecursiveNBTScanner.isSafe(peItem.getNBT(), maxNBTDepth, maxNBTTags)) {
+                    incrementBlockedCount();
+                    event.setCancelled(true);
+                    logExploit(player.getName(), "Zararlı NBT (ClickWindow Paket Seviyesi) tespit edildi!");
+                    return;
+                }
             }
 
             // NBT kontrolü

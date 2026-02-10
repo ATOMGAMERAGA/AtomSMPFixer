@@ -105,7 +105,7 @@ moduller:
     max-satir-uzunlugu: 384
     # Renk kodlarını temizle
     renk-kodlarini-temizle: false
-    # Özel karakterleri engelle
+    # Özel karakterleri engelle (Unicode taşması koruması)
     ozel-karakterleri-engelle: true
 
   # Kürsü crash düzeltmesi
@@ -255,6 +255,20 @@ moduller:
     # Sıfır-tick makinelerini engelle
     sifir-tick-engelle: true
 
+  # Akıllı Lag Tespiti (Heuristik)
+  akilli-lag-tespiti:
+    aktif: true
+    # Lag olarak kabul edilecek tick süresi (ms)
+    lag-esigi-ms: 50
+    # Bir chunk'ta kaç entity varsa "ağır" kabul edilsin
+    entity-esigi-chunk: 50
+    # Bir chunk'ta kaç tile entity varsa "ağır" kabul edilsin
+    tile-entity-esigi-chunk: 30
+
+  # Gelişmiş Duplikasyon (Portal/Shulker)
+  gelismis-duplikasyon:
+    aktif: true
+
   # ═══════════════════════════════════════
   # Bot Koruması & Panik Modu
   # ═══════════════════════════════════════
@@ -262,6 +276,34 @@ moduller:
   # Bot Koruması
   bot-korumasi:
     aktif: true
+    # AtomShield: Gelişmiş Hibrit Bot Koruma Sistemi (v2.1+)
+    atom-shield:
+      # Katman 1: Handshake Analizi
+      handshake:
+        aktif: true
+        # Handshake paketinde hostname zorunluluğu (oyna.sunucum.com gibi)
+        # Botlar genellikle doğrudan IP veya localhost ile bağlanır.
+        hostname-zorunlu: true
+        # Port tutarlılığı kontrolü
+        port-kontrolu: true
+      
+      # Katman 2: Protokol & Zamanlama Analizi
+      protokol:
+        aktif: true
+        # Handshake ile Login Start arasındaki minimum süre (ms)
+        # Botlar "anında" paket gönderir, insanlar JVM/Network gecikmesi yaşar.
+        min-login-gecikmesi: 50
+        # Şifreleme (Encryption) zamanlaması manipülasyonu
+        sifreleme-gecikmesi: true
+      
+      # Katman 3: Davranışsal Analiz (Limbo)
+      davranissal:
+        aktif: true
+        # Şüpheli bağlantıları Limbo dünyasına al
+        limbo-aktif: false
+        # Yerçekimi testi (Oyuncunun düşüp düşmediğini kontrol eder)
+        yercekimi-testi: true
+
     # Benzer isim kontrolü
     benzer-isim-kontrolu:
       aktif: true
