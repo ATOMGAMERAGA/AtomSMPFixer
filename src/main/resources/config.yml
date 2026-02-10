@@ -1,7 +1,7 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║          v2.2.3 — Connection Fix 2           ║
+# ║          v2.3.0 — Advanced Protection        ║
 # ╚══════════════════════════════════════════════╝
 
 # Genel Ayarlar
@@ -19,6 +19,95 @@ genel:
     gunluk-dosya: true
     # Eski logları silme süresi (gün, 0 = hiçbir zaman silme)
     log-saklama-gunu: 7
+
+# Web Panel Ayarları
+web-panel:
+  # Web panelini aktif et
+  enabled: false
+  # Web panel portu
+  port: 8080
+  # Kimlik doğrulama (HTTP Basic Auth)
+  kimlik-dogrulama:
+    aktif: true
+    kullanici-adi: "admin"
+    sifre: "atomsmp2024"
+  # Web panelde gösterilecek maksimum olay sayısı
+  max-olay-sayisi: 100
+
+# Discord Webhook Bildirimleri
+discord-webhook:
+  # Webhook sistemini aktif et
+  aktif: false
+  # Discord webhook URL'si
+  webhook-url: ""
+  # Bildirim türleri (her biri ayrı ayrı açılıp kapatılabilir)
+  bildirimler:
+    saldiri-modu: true
+    exploit-engelleme: true
+    bot-kick: true
+    panik-komutu: true
+    performans: true
+  # Exploit bildirimleri toplama süresi (saniye)
+  toplama-suresi: 30
+
+# İstatistik Kalıcılığı
+istatistik:
+  aktif: true
+  # Otomatik kaydetme aralığı (dakika)
+  otomatik-kaydetme-dakika: 5
+  # Maksimum saldırı geçmişi kaydı
+  max-saldiri-gecmisi: 100
+
+# Doğrulanmış Oyuncu Önbelleği
+dogrulanmis-onbellek:
+  aktif: true
+  # Önbellek süresi (saat)
+  sure-saat: 48
+  # Doğrulanmış oyuncular için bot kontrolünü atla
+  bot-kontrolu-atla: true
+  # Doğrulanmış oyuncular için IP kontrolünü atla
+  ip-kontrolu-atla: false
+
+# Anti-VPN & IP Reputation
+anti-vpn:
+  # Sistemi aktif et
+  enabled: false
+  # ProxyCheck.io API Anahtarı (Zorunlu değil ama önerilir)
+  api-key: ""
+  # Risk eşiği (0-100) - Botlar genelde 60+ çıkar. Düşürürseniz daha katı olur.
+  risk-threshold: 60
+  # Engellenen ülkeler (ISO Kodları, örn: "CN", "RU", "US")
+  blocked-countries: []
+  # Kick mesajı
+  kick-message: "<red>Sistemlerimizde Proxy veya VPN kullandığınız tespit edildi.<br>Lütfen kapatıp tekrar deneyin."
+  # Cache süresi (saat)
+  cache-hours: 24
+
+# Attack Mode (Real-time Protection)
+attack-mode:
+  # Saniyede kaç bağlantıdan sonra "Attack Mode" aktif olsun?
+  threshold: 10
+  # Attack Mode ne kadar sürsün? (Saniye)
+  duration-seconds: 60
+  # v2.3 — Saldırı sırasında otomatik aksiyonlar
+  aksiyonlar:
+    # Daha önce başarıyla bağlanmamış IP'leri engelle
+    dogrulanmamis-ip-engelle: true
+    # Paket hız limitlerini sıkılaştır
+    siki-limitler: true
+    # Sıkı limit çarpanı (0.5 = limitler yarıya düşer)
+    siki-limit-carpani: 0.5
+    # Belirli modülleri otomatik etkinleştir
+    otomatik-modul-etkinlestir: true
+    # Otomatik etkinleştirilecek modüller
+    otomatik-moduller:
+      - "bot-korumasi"
+      - "paket-exploit"
+      - "jeton-kovasi"
+    # Sadece doğrulanmış IP'lere izin ver (çok katı)
+    sadece-beyaz-liste: false
+    # Discord'a bildirim gönder
+    discord-bildirim: true
 
 # ═══════════════════════════════════════
 # Modül Ayarları
@@ -268,6 +357,16 @@ moduller:
   # Gelişmiş Duplikasyon (Portal/Shulker)
   gelismis-duplikasyon:
     aktif: true
+
+  # v2.3 — Bağlantı Hız Sınırlandırıcı
+  baglanti-sinirlandirici:
+    aktif: true
+    # IP başına dakikada maksimum bağlantı sayısı
+    dakikada-max-baglanti: 3
+    # Saldırı modunda dakikada maksimum bağlantı
+    saldiri-dakikada-max: 1
+    # Muaf IP adresleri
+    muaf-ipler: []
 
   # ═══════════════════════════════════════
   # Bot Koruması & Panik Modu

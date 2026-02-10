@@ -28,6 +28,7 @@ public class AtomFixTabCompleter implements TabCompleter {
         "reload",
         "status",
         "toggle",
+        "stats",
         "info"
     );
 

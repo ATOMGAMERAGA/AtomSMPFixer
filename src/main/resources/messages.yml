@@ -41,6 +41,9 @@ engelleme:
   shulker-bayt: "<red>⚠ Shulker kutusu boyut limiti aşıldı!"
   entity-kilit: "<red>⚠ Bu entity'nin envanteri şu anda başka biri tarafından kullanılıyor!"
   redstone-limit: "<red>⚠ Bu bölgede redstone aktivitesi geçici olarak sınırlandırıldı!"
+  # v2.3 — Yeni mesajlar
+  baglanti-siniri: "<red>⚠ Çok fazla bağlantı denemesi! Lütfen bir dakika bekleyin."
+  saldiri-engel: "<red>⚠ Sunucu saldırı altında. Lütfen daha sonra tekrar deneyin."
 
 bildirim:
   # Admin bildirimleri
@@ -66,7 +69,8 @@ info:
   packetevents-versiyon: "<gray>PacketEvents Sürümü: <white>{packetevents}"
   java-versiyon: "<gray>Java Sürümü: <white>{java}"
   aktif-modul: "<gray>Aktif Modül: <white>{aktif}/{toplam}"
-  komutlar: "<gray>Komutlar: <white>/atomfix <reload|status|toggle|info>"
+  komutlar: "<gray>Komutlar: <white>/atomfix <reload|status|toggle|stats|info>"
+  dogrulanmis-onbellek: "<gray>Doğrulanmış Önbellek: <white>{sayi} oyuncu"
 
 toggle:
   kullanim: "<red>Kullanım: /atomfix toggle <modül_adı>"

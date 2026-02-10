@@ -14,6 +14,14 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import com.atomsmp.fixer.data.VerifiedPlayerCache;
+import com.atomsmp.fixer.heuristic.HeuristicEngine;
+import com.atomsmp.fixer.manager.AttackModeManager;
+import com.atomsmp.fixer.manager.DiscordWebhookManager;
+import com.atomsmp.fixer.manager.StatisticsManager;
+import com.atomsmp.fixer.reputation.IPReputationManager;
+import com.atomsmp.fixer.web.WebPanel;
+
 /**
  * AtomSMPFixer - Paper 1.21.4 Exploit Fixer Plugin
  * Gelişmiş exploit düzeltme ve sunucu koruma sistemi
@@ -31,6 +39,27 @@ public final class AtomSMPFixer extends JavaPlugin {
     private MessageManager messageManager;
     private LogManager logManager;
     private ModuleManager moduleManager;
+    
+    // Attack Mode Manager
+    private AttackModeManager attackModeManager;
+
+    // Heuristic Engine
+    private HeuristicEngine heuristicEngine;
+
+    // Web Panel
+    private WebPanel webPanel;
+
+    // IP Reputation Manager
+    private IPReputationManager reputationManager;
+
+    // v2.3 — Discord Webhook Manager
+    private DiscordWebhookManager discordWebhookManager;
+
+    // v2.3 — Statistics Manager
+    private StatisticsManager statisticsManager;
+
+    // v2.3 — Verified Player Cache
+    private VerifiedPlayerCache verifiedPlayerCache;
 
     // Listener'lar
     private PacketListener packetListener;
@@ -102,6 +131,31 @@ public final class AtomSMPFixer extends JavaPlugin {
     public void onDisable() {
         getLogger().info("AtomSMPFixer kapatılıyor...");
 
+        // v2.3 — Discord Webhook durdur
+        if (discordWebhookManager != null) {
+            discordWebhookManager.stop();
+        }
+
+        // v2.3 — Statistics kaydet ve durdur
+        if (statisticsManager != null) {
+            statisticsManager.stop();
+        }
+
+        // v2.3 — Verified Player Cache kaydet ve durdur
+        if (verifiedPlayerCache != null) {
+            verifiedPlayerCache.stop();
+        }
+
+        // Web Panel'i durdur
+        if (webPanel != null) {
+            webPanel.stop();
+        }
+
+        // Reputation Cache'i kaydet
+        if (reputationManager != null) {
+            reputationManager.saveCache();
+        }
+
         // Modülleri devre dışı bırak
         if (moduleManager != null) {
             moduleManager.disableAllModules();
@@ -136,6 +190,31 @@ public final class AtomSMPFixer extends JavaPlugin {
         // Log Manager
         this.logManager = new LogManager(this);
         logManager.start();
+        
+        // v2.3 — Discord Webhook Manager
+        this.discordWebhookManager = new DiscordWebhookManager(this);
+        discordWebhookManager.start();
+
+        // v2.3 — Statistics Manager
+        this.statisticsManager = new StatisticsManager(this);
+        statisticsManager.start();
+
+        // v2.3 — Verified Player Cache
+        this.verifiedPlayerCache = new VerifiedPlayerCache(this);
+        verifiedPlayerCache.start();
+
+        // Attack Mode Manager
+        this.attackModeManager = new AttackModeManager(this);
+
+        // Heuristic Engine
+        this.heuristicEngine = new HeuristicEngine(this);
+
+        // Web Panel
+        this.webPanel = new WebPanel(this);
+        webPanel.start();
+
+        // Reputation Manager
+        this.reputationManager = new IPReputationManager(this);
 
         // Module Manager
         this.moduleManager = new ModuleManager(this);
@@ -145,6 +224,13 @@ public final class AtomSMPFixer extends JavaPlugin {
 
         // Modülleri etkinleştir
         moduleManager.enableAllModules();
+
+        // Attack Mode Update Task (Every 5 seconds)
+        getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (attackModeManager != null) {
+                attackModeManager.update();
+            }
+        }, 100L, 100L);
 
         getLogger().info("Tüm manager'lar başlatıldı.");
     }
@@ -288,6 +374,9 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.SmartLagModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.DuplicationFixModule(this));
 
+        // v2.3 — Bağlantı Hız Sınırlandırıcı
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ConnectionThrottleModule(this));
+
         getLogger().info("Toplam " + moduleManager.getTotalModuleCount() + " modül kaydedildi.");
     }
 
@@ -386,5 +475,71 @@ public final class AtomSMPFixer extends JavaPlugin {
     @NotNull
     public InventoryListener getInventoryListener() {
         return inventoryListener;
+    }
+
+    /**
+     * HeuristicEngine alır
+     *
+     * @return HeuristicEngine instance
+     */
+    @NotNull
+    public HeuristicEngine getHeuristicEngine() {
+        return heuristicEngine;
+    }
+
+    /**
+     * IPReputationManager alır
+     *
+     * @return IPReputationManager instance
+     */
+    @NotNull
+    public IPReputationManager getReputationManager() {
+        return reputationManager;
+    }
+
+    /**
+     * AttackModeManager alır
+     *
+     * @return AttackModeManager instance
+     */
+    @NotNull
+    public AttackModeManager getAttackModeManager() {
+        return attackModeManager;
+    }
+
+    /**
+     * DiscordWebhookManager alır
+     *
+     * @return DiscordWebhookManager instance
+     */
+    public DiscordWebhookManager getDiscordWebhookManager() {
+        return discordWebhookManager;
+    }
+
+    /**
+     * StatisticsManager alır
+     *
+     * @return StatisticsManager instance
+     */
+    public StatisticsManager getStatisticsManager() {
+        return statisticsManager;
+    }
+
+    /**
+     * VerifiedPlayerCache alır
+     *
+     * @return VerifiedPlayerCache instance
+     */
+    public VerifiedPlayerCache getVerifiedPlayerCache() {
+        return verifiedPlayerCache;
+    }
+
+    /**
+     * WebPanel alır
+     *
+     * @return WebPanel instance
+     */
+    public WebPanel getWebPanel() {
+        return webPanel;
     }
 }

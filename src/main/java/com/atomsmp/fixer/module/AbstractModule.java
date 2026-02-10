@@ -122,7 +122,12 @@ public abstract class AbstractModule {
      * @return Yeni engelleme sayısı
      */
     protected long incrementBlockedCount() {
-        return blockedCount.incrementAndGet();
+        long count = blockedCount.incrementAndGet();
+        // v2.3 — Statistics recording
+        if (plugin.getStatisticsManager() != null) {
+            plugin.getStatisticsManager().recordBlock(name);
+        }
+        return count;
     }
 
     /**
@@ -248,5 +253,13 @@ public abstract class AbstractModule {
      */
     protected void logExploit(@NotNull String playerName, @NotNull String details) {
         plugin.getLogManager().logExploit(playerName, name, details);
+        // v2.3 — Discord webhook notification
+        if (plugin.getDiscordWebhookManager() != null) {
+            plugin.getDiscordWebhookManager().notifyExploitBlocked(name, playerName, details);
+        }
+        // v2.3 — Web panel event recording
+        if (plugin.getWebPanel() != null) {
+            plugin.getWebPanel().recordEvent(name, playerName, details);
+        }
     }
 }

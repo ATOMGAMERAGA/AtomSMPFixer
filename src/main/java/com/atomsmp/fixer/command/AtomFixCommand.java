@@ -1,6 +1,7 @@
 package com.atomsmp.fixer.command;
 
 import com.atomsmp.fixer.AtomSMPFixer;
+import com.atomsmp.fixer.manager.StatisticsManager;
 import com.atomsmp.fixer.module.AbstractModule;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -10,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,6 +64,7 @@ public class AtomFixCommand implements CommandExecutor {
             case "reload" -> handleReload(sender);
             case "status" -> handleStatus(sender);
             case "toggle" -> handleToggle(sender, args);
+            case "stats" -> handleStats(sender);
             case "info" -> showInfo(sender);
             default -> plugin.getMessageManager().sendMessage(sender, "genel.bilinmeyen-komut");
         }
@@ -201,6 +204,74 @@ public class AtomFixCommand implements CommandExecutor {
     }
 
     /**
+     * Stats alt komutu - detayli istatistik goruntuleme
+     *
+     * @param sender Komut gonderen
+     */
+    private void handleStats(@NotNull CommandSender sender) {
+        StatisticsManager stats = plugin.getStatisticsManager();
+
+        // Baslik
+        sender.sendMessage(plugin.getMessageManager().parse(
+                "<gradient:#00d4ff:#00ff88><bold>═══ AtomSMPFixer İstatistikler ═══</bold></gradient>"));
+
+        if (stats == null || !stats.isEnabled()) {
+            sender.sendMessage(Component.text("İstatistik sistemi devre dışı.", NamedTextColor.RED));
+            return;
+        }
+
+        // Toplam engelleme (tum zamanlar)
+        sender.sendMessage(Component.text("Toplam Engelleme (Tüm Zamanlar): ", NamedTextColor.GRAY)
+                .append(Component.text(String.valueOf(stats.getTotalBlockedAllTime()), NamedTextColor.WHITE)));
+
+        // Toplam engelleme (bu oturum)
+        sender.sendMessage(Component.text("Toplam Engelleme (Bu Oturum): ", NamedTextColor.GRAY)
+                .append(Component.text(String.valueOf(plugin.getModuleManager().getTotalBlockedCount()), NamedTextColor.WHITE)));
+
+        // Modul bazli istatistikler
+        sender.sendMessage(Component.text(""));
+        sender.sendMessage(Component.text("Modül Bazlı İstatistikler:", NamedTextColor.AQUA));
+
+        Map<String, Long> moduleTotals = stats.getAllModuleTotals();
+        moduleTotals.entrySet().stream()
+                .filter(e -> e.getValue() > 0)
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(15)
+                .forEach(entry -> {
+                    long todayCount = stats.getModuleBlockedToday(entry.getKey());
+                    sender.sendMessage(Component.text("  • " + entry.getKey() + ": ", NamedTextColor.GRAY)
+                            .append(Component.text(entry.getValue() + " toplam", NamedTextColor.WHITE))
+                            .append(Component.text(" (" + todayCount + " bugün)", NamedTextColor.YELLOW)));
+                });
+
+        // Saldiri gecmisi
+        List<StatisticsManager.AttackRecord> attacks = stats.getAttackHistory();
+        sender.sendMessage(Component.text(""));
+        sender.sendMessage(Component.text("Saldırı Geçmişi: ", NamedTextColor.AQUA)
+                .append(Component.text(attacks.size() + " kayıt", NamedTextColor.WHITE)));
+
+        int displayLimit = Math.min(attacks.size(), 5);
+        for (int i = 0; i < displayLimit; i++) {
+            StatisticsManager.AttackRecord attack = attacks.get(i);
+            sender.sendMessage(Component.text("  • " + attack.date + ": ", NamedTextColor.GRAY)
+                    .append(Component.text(attack.getDurationSeconds() + "sn", NamedTextColor.WHITE))
+                    .append(Component.text(" | Peak: " + attack.peakConnectionRate + "/sn", NamedTextColor.RED))
+                    .append(Component.text(" | Engel: " + attack.blockedCount, NamedTextColor.YELLOW)));
+        }
+
+        // Attack mode durumu
+        if (plugin.getAttackModeManager().isAttackMode()) {
+            sender.sendMessage(Component.text(""));
+            sender.sendMessage(Component.text("⚠ SALDIRI MODU AKTİF!", NamedTextColor.RED));
+            sender.sendMessage(Component.text("  Bağlantı hızı: " + plugin.getAttackModeManager().getCurrentRate() + "/sn", NamedTextColor.YELLOW));
+            sender.sendMessage(Component.text("  Doğrulanmış IP: " + plugin.getAttackModeManager().getVerifiedIpCount(), NamedTextColor.GRAY));
+        }
+
+        sender.sendMessage(plugin.getMessageManager().parse(
+                "<gradient:#00d4ff:#00ff88><bold>══════════════════════════════════</bold></gradient>"));
+    }
+
+    /**
      * Info alt komutu
      *
      * @param sender Komut gönderen
@@ -240,5 +311,12 @@ public class AtomFixCommand implements CommandExecutor {
 
         // Komutlar
         plugin.getMessageManager().sendMessage(sender, "info.komutlar");
+
+        // Verified player cache info
+        if (plugin.getVerifiedPlayerCache() != null && plugin.getVerifiedPlayerCache().isEnabled()) {
+            Map<String, String> cacheMap = new HashMap<>();
+            cacheMap.put("sayi", String.valueOf(plugin.getVerifiedPlayerCache().getCacheSize()));
+            plugin.getMessageManager().sendMessage(sender, "info.dogrulanmis-onbellek", cacheMap);
+        }
     }
 }

@@ -6,6 +6,10 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientAnimation;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerPositionAndRotation;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerRotation;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -106,8 +110,29 @@ public class PacketListener extends PacketListenerAbstract {
      * @param event Paket alma eventi
      */
     private void handleIncomingPacket(@NotNull PacketReceiveEvent event) {
-        if (!(event.getPacketType() instanceof PacketType.Play.Client packetType)) {
+        if (!(event.getPacketType() instanceof PacketType.Play.Client)) {
             return;
+        }
+
+        Player player = null;
+        if (event.getUser() != null && event.getUser().getUUID() != null) {
+            player = plugin.getServer().getPlayer(event.getUser().getUUID());
+        }
+
+        if (player != null) {
+            // Heuristic Engine Integration
+            if (event.getPacketType() == PacketType.Play.Client.PLAYER_ROTATION) {
+                WrapperPlayClientPlayerRotation wrapper = new WrapperPlayClientPlayerRotation(event);
+                plugin.getHeuristicEngine().analyzeRotation(player, wrapper.getYaw(), wrapper.getPitch());
+            } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_POSITION_AND_ROTATION) {
+                WrapperPlayClientPlayerPositionAndRotation wrapper = new WrapperPlayClientPlayerPositionAndRotation(event);
+                plugin.getHeuristicEngine().analyzeRotation(player, wrapper.getYaw(), wrapper.getPitch());
+            } else if (event.getPacketType() == PacketType.Play.Client.ANIMATION) {
+                WrapperPlayClientAnimation wrapper = new WrapperPlayClientAnimation(event);
+                if (wrapper.getHand() == com.github.retrooper.packetevents.protocol.player.InteractionHand.MAIN_HAND) {
+                    plugin.getHeuristicEngine().analyzeClick(player);
+                }
+            }
         }
 
         // Burada modül sistemi genişletildiğinde,
