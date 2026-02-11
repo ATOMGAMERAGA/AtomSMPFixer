@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.atomsmp</groupId>
+        <artifactId>AtomSMPFixer-parent</artifactId>
+        <version>3.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>atomsmpfixer-velocity</artifactId>
+    <packaging>jar</packaging>
+
+    <name>AtomSMPFixer Velocity</name>
+    <description>Velocity proxy module for AtomSMPFixer (Sprint 6)</description>
+
+    <dependencies>
+        <!-- API Module -->
+        <dependency>
+            <groupId>com.atomsmp</groupId>
+            <artifactId>atomsmpfixer-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
