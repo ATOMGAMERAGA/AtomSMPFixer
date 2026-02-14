@@ -4,8 +4,13 @@
 # ║    v2.4.0 — Gelişmiş Anti-VPN Sistemi       ║
 # ╚══════════════════════════════════════════════╝
 
+# Config Versiyonu (Değiştirmeyin)
+config-version: "3.2.0"
+
 # Genel Ayarlar
 genel:
+  # Plugin dili (tr, en)
+  dil: "tr"
   # Plugin öneki (mesajlarda kullanılır)
   onek: "<gradient:#00d4ff:#00ff88>AtomSMPFixer</gradient> <dark_gray>»</dark_gray>"
   # Debug modu (geliştirici bilgilerini konsola yazdırır)
@@ -32,6 +37,16 @@ database:
     username: "root"
     password: ""
     use-ssl: false
+
+# Redis Ayarları (Cross-Server Senkronizasyon)
+redis:
+  # Redis'i aktif et (Birden fazla sunucunuz varsa önerilir)
+  enabled: false
+  host: "localhost"
+  port: 6379
+  password: ""
+  # Bağlantı zaman aşımı (ms)
+  timeout: 2000
 
 # Web Panel Ayarları
 web-panel:

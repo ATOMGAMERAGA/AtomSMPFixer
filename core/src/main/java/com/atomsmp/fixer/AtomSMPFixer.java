@@ -64,6 +64,9 @@ public final class AtomSMPFixer extends JavaPlugin {
     // v2.3 — Statistics Manager
     private StatisticsManager statisticsManager;
 
+    // v2.3 — Redis Manager (Cross-Server Sync)
+    private com.atomsmp.fixer.manager.RedisManager redisManager;
+
     // v2.3 — Verified Player Cache
     private VerifiedPlayerCache verifiedPlayerCache;
 
@@ -147,6 +150,11 @@ public final class AtomSMPFixer extends JavaPlugin {
             statisticsManager.stop();
         }
 
+        // v2.3 — Redis kapat
+        if (redisManager != null) {
+            redisManager.stop();
+        }
+
         // v2.3 — Verified Player Cache kaydet ve durdur
         if (verifiedPlayerCache != null) {
             verifiedPlayerCache.stop();
@@ -212,6 +220,10 @@ public final class AtomSMPFixer extends JavaPlugin {
         // v2.3 — Statistics Manager
         this.statisticsManager = new StatisticsManager(this);
         statisticsManager.start();
+
+        // v2.3 — Redis Manager
+        this.redisManager = new com.atomsmp.fixer.manager.RedisManager(this);
+        redisManager.start();
 
         // v2.3 — Verified Player Cache
         this.verifiedPlayerCache = new VerifiedPlayerCache(this);
@@ -574,6 +586,15 @@ public final class AtomSMPFixer extends JavaPlugin {
      */
     public StatisticsManager getStatisticsManager() {
         return statisticsManager;
+    }
+
+    /**
+     * RedisManager alır
+     *
+     * @return RedisManager instance
+     */
+    public com.atomsmp.fixer.manager.RedisManager getRedisManager() {
+        return redisManager;
     }
 
     /**

@@ -49,6 +49,9 @@ public class ConfigManager {
         // Config dosyasını yükle
         loadConfig();
 
+        // Versiyon kontrolü ve otomatik güncelleme (Sprint 3)
+        checkConfigVersion();
+
         // Messages dosyasını yükle
         loadMessages();
 
@@ -56,6 +59,17 @@ public class ConfigManager {
         configCache.clear();
 
         plugin.getLogger().info("Yapılandırma dosyaları başarıyla yüklendi.");
+    }
+
+    private void checkConfigVersion() {
+        String currentVersion = plugin.getDescription().getVersion();
+        String configVersion = config.getString("config-version", "1.0.0");
+
+        if (!configVersion.equals(currentVersion)) {
+            plugin.getLogger().info("Config versiyonu eski (" + configVersion + "), güncelleniyor: " + currentVersion);
+            config.set("config-version", currentVersion);
+            saveConfig();
+        }
     }
 
     /**
@@ -85,17 +99,33 @@ public class ConfigManager {
      * messages.yml dosyasını yükler veya oluşturur
      */
     private void loadMessages() {
-        File messagesFile = new File(plugin.getDataFolder(), "messages.yml");
+        String lang = config.getString("genel.dil", "tr").toLowerCase();
+        String fileName = "messages_" + lang + ".yml";
+        File messagesFile = new File(plugin.getDataFolder(), fileName);
 
         // Dosya yoksa kaynaklardan kopyala
         if (!messagesFile.exists()) {
-            plugin.saveResource("messages.yml", false);
+            try {
+                plugin.saveResource(fileName, false);
+            } catch (Exception e) {
+                // Fallback to Turkish if requested language not found in resources
+                plugin.getLogger().warning("Dil dosyası bulunamadı: " + fileName + " - Türkçe kullanılıyor.");
+                fileName = "messages_tr.yml";
+                messagesFile = new File(plugin.getDataFolder(), fileName);
+                if (!messagesFile.exists()) {
+                    plugin.saveResource("messages_tr.yml", false);
+                }
+            }
         }
 
         this.messages = YamlConfiguration.loadConfiguration(messagesFile);
 
         // Varsayılan değerleri yükle
-        InputStream defaultStream = plugin.getResource("messages.yml");
+        InputStream defaultStream = plugin.getResource(fileName);
+        if (defaultStream == null) {
+            defaultStream = plugin.getResource("messages_tr.yml");
+        }
+        
         if (defaultStream != null) {
             YamlConfiguration defaultMessages = YamlConfiguration.loadConfiguration(
                 new InputStreamReader(defaultStream, StandardCharsets.UTF_8)

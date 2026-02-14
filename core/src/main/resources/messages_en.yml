@@ -1,0 +1,78 @@
+# AtomSMPFixer Messages (English)
+# Supports MiniMessage format
+
+genel:
+  onek: "<gradient:#00d4ff:#00ff88><bold>AtomSMPFixer</bold></gradient> <dark_gray>»</dark_gray>"
+  yeniden-yuklendi: "<green>Configuration reloaded successfully!"
+  izin-yok: "<red>You don't have permission to use this command!"
+  bilinmeyen-komut: "<red>Unknown sub-command. Type /atomfix info for help."
+  modul-acildi: "<green>Module {modul} enabled successfully!"
+  modul-kapandi: "<red>Module {modul} disabled successfully!"
+  modul-bulunamadi: "<red>Module '{modul}' not found!"
+  sadece-oyuncu: "<red>This command can only be used by players!"
+
+engelleme:
+  kitap-crash: "<red>⚠ Book exploit blocked!"
+  paket-exploit: "<red>⚠ Malicious packet detected and blocked!"
+  payload-engellendi: "<red>⚠ Invalid payload blocked!"
+  komut-engellendi: "<red>⚠ This command is blocked for server security!"
+  creative-item: "<red>⚠ Invalid creative item detected and cleaned!"
+  tabela-engellendi: "<red>⚠ Invalid sign content blocked!"
+  kursu-engellendi: "<red>⚠ Invalid lectern interaction blocked!"
+  harita-etiketi: "<red>⚠ Map label limit exceeded!"
+  gecersiz-slot: "<red>⚠ Invalid inventory slot interaction blocked!"
+  nbt-crash: "<red>⚠ Excessive NBT data detected and blocked!"
+  inek-cooldown: "<red>⚠ Milking too fast! Please wait."
+  dispenser-engellendi: "<red>⚠ Invalid dispenser interaction blocked!"
+  cevrimdisi-paket: "<red>⚠ Offline packet request blocked!"
+  envanter-dupe: "<red>⚠ Block breaking while inventory open is blocked!"
+  katir-dupe: "<red>⚠ Unloaded entity interaction blocked!"
+  portal-engellendi: "<red>⚠ Portal break attempt blocked!"
+  bundle-dupe: "<red>⚠ Bundle duplication attempt blocked!"
+  frame-crash: "<red>⚠ Item frame limit exceeded!"
+  cok-fazla-kitap: "<red>⚠ Too many books in this chunk! Limit: {limit}"
+  paket-gecikme: "<red>⚠ Packet delay exploit blocked!"
+  # v2.0 — New module messages
+  jeton-kovasi-kick: "<red>⚠ Excessive packets detected! Connection terminated."
+  gelismis-payload: "<red>⚠ Invalid payload data blocked!"
+  netty-crash: "<red>⚠ Invalid location data detected! Connection terminated."
+  item-temizlendi: "<red>⚠ Invalid item detected and cleaned!"
+  bundle-kilit: "<red>⚠ Bundle interaction temporarily locked!"
+  shulker-bayt: "<red>⚠ Shulker box size limit exceeded!"
+  entity-kilit: "<red>⚠ This entity's inventory is currently in use by someone else!"
+  redstone-limit: "<red>⚠ Redstone activity in this area is temporarily restricted!"
+  # v2.3 — New messages
+  baglanti-siniri: "<red>⚠ Too many connection attempts! Please wait a minute."
+  saldiri-engel: "<red>⚠ Server is under attack. Please try again later."
+
+bildirim:
+  # Admin notifications
+  admin-uyari: "<gold>[AtomSMPFixer] <yellow>{oyuncu} <gray>detected using <red>{exploit} <gray>exploit!"
+  sunucu-korumada: "<green>[AtomSMPFixer] Server is protected. Active modules: {sayi}"
+
+durum:
+  baslik: "<gradient:#00d4ff:#00ff88><bold>═══ AtomSMPFixer Status ═══</bold></gradient>"
+  modul-satir: "  <gray>• <white>{modul}: {durum}"
+  acik: "<green>✔ Enabled"
+  kapali: "<red>✘ Disabled"
+  istatistik: "<aqua>Total blocked exploits: <white>{sayi}"
+  alt-bilgi: "<gradient:#00d4ff:#00ff88><bold>══════════════════════════</bold></gradient>"
+  tps: "<gray>Server TPS: <white>{tps}"
+  bellek: "<gray>Plugin memory usage: <white>{bellek} MB"
+  uptime: "<gray>Uptime: <white>{uptime}"
+
+info:
+  baslik: "<gradient:#00d4ff:#00ff88><bold>═══ AtomSMPFixer Info ═══</bold></gradient>"
+  versiyon: "<gray>Version: <white>{versiyon}"
+  gelistirici: "<gray>Developer: <white>AtomSMP"
+  paper-versiyon: "<gray>Paper Version: <white>{paper}"
+  packetevents-versiyon: "<gray>PacketEvents Version: <white>{packetevents}"
+  java-versiyon: "<gray>Java Version: <white>{java}"
+  aktif-modul: "<gray>Active Modules: <white>{aktif}/{toplam}"
+  komutlar: "<gray>Commands: <white>/atomfix <reload|status|toggle|stats|antivpn|info>"
+  dogrulanmis-onbellek: "<gray>Verified Cache: <white>{sayi} players"
+
+toggle:
+  kullanim: "<red>Usage: /atomfix toggle <module_name>"
+  liste-baslik: "<green>Available modules:"
+  liste-satir: "  <gray>• <white>{modul}"

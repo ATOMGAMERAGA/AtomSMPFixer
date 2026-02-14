@@ -95,6 +95,35 @@ public class AttackModeManager {
         if (actionDiscordNotify && plugin.getDiscordWebhookManager() != null) {
             plugin.getDiscordWebhookManager().notifyAttackMode(true, triggerRate);
         }
+
+        // v2.3 — Redis sync
+        if (plugin.getRedisManager() != null) {
+            plugin.getRedisManager().publish("ATTACK_MODE", "true");
+        }
+    }
+
+    /**
+     * Forcing attack mode from external source (e.g. Redis)
+     */
+    public void forceEnable() {
+        if (!attackMode) {
+            this.attackMode = true;
+            this.attackModeStartTime = System.currentTimeMillis();
+            this.peakRate = threshold;
+            this.blockedDuringAttack = 0;
+            executeAttackActions();
+            plugin.getLogger().warning("!!! ATTACK MODE ACTIVATED (Synced via Redis) !!!");
+        }
+    }
+
+    /**
+     * Forcing attack mode deactivation from external source (e.g. Redis)
+     */
+    public void forceDisable() {
+        if (attackMode) {
+            this.attackMode = false;
+            plugin.getLogger().info("Attack mode deactivated (Synced via Redis).");
+        }
     }
 
     private void executeAttackActions() {
@@ -140,6 +169,11 @@ public class AttackModeManager {
         // Discord notification
         if (actionDiscordNotify && plugin.getDiscordWebhookManager() != null) {
             plugin.getDiscordWebhookManager().notifyAttackMode(false, 0);
+        }
+
+        // v2.3 — Redis sync
+        if (plugin.getRedisManager() != null) {
+            plugin.getRedisManager().publish("ATTACK_MODE", "false");
         }
     }
 

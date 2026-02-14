@@ -458,7 +458,12 @@ public class IPReputationManager implements IReputationService {
      */
     public boolean addToManualBlocklist(@NotNull String ip) {
         boolean added = manualBlocklist.add(ip);
-        if (added) saveManualBlocklist();
+        if (added) {
+            saveManualBlocklist();
+            if (plugin.getRedisManager() != null) {
+                plugin.getRedisManager().publish("IP_BLOCK", ip);
+            }
+        }
         return added;
     }
 
@@ -468,7 +473,12 @@ public class IPReputationManager implements IReputationService {
      */
     public boolean removeFromManualBlocklist(@NotNull String ip) {
         boolean removed = manualBlocklist.remove(ip);
-        if (removed) saveManualBlocklist();
+        if (removed) {
+            saveManualBlocklist();
+            if (plugin.getRedisManager() != null) {
+                plugin.getRedisManager().publish("IP_UNBLOCK", ip);
+            }
+        }
         return removed;
     }
 
