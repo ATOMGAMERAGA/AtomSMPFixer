@@ -45,6 +45,14 @@ engelleme:
   baglanti-siniri: "<red>⚠ Çok fazla bağlantı denemesi! Lütfen bir dakika bekleyin."
   saldiri-engel: "<red>⚠ Sunucu saldırı altında. Lütfen daha sonra tekrar deneyin."
 
+antibot:
+  kick-mesaji: "<red>⚠ Şüpheli bağlantı tespit edildi. Lütfen birkaç dakika sonra tekrar deneyin."
+  kara-liste-mesaji: "<red>⛔ Bu IP adresi geçici olarak engellenmiştir."
+  saldiri-basladi: "<gold>⚠ Bot saldırısı tespit edildi! Koruma seviyesi artırıldı."
+  saldiri-bitti: "<green>✅ Bot saldırısı sona erdi. Normal moda dönüldü."
+  oyuncu-dogrulandi: "<green>✅ {oyuncu} bot koruma doğrulamasından geçti."
+  skor-bilgi: "<gray>Tehdit skoru: <yellow>{skor}</yellow> | Durum: {durum}"
+
 bildirim:
   # Admin bildirimleri
   admin-uyari: "<gold>[AtomSMPFixer] <yellow>{oyuncu} <gray>tarafından <red>{exploit} <gray>exploit'i tespit edildi!"

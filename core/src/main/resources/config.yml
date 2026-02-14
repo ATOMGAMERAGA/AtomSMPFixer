@@ -5,7 +5,7 @@
 # ╚══════════════════════════════════════════════╝
 
 # Config Versiyonu (Değiştirmeyin)
-config-version: "3.2.0"
+config-version: "3.3.0"
 
 # Genel Ayarlar
 genel:
@@ -461,58 +461,112 @@ moduller:
     muaf-ipler: []
 
   # ═══════════════════════════════════════
-  # Bot Koruması & Panik Modu
+  # Gelişmiş AntiBot Sistemi v3.2.0
   # ═══════════════════════════════════════
 
   # Bot Koruması
-  bot-korumasi:
+  bot-koruma:
     aktif: true
-    # AtomShield: Gelişmiş Hibrit Bot Koruma Sistemi (v2.1+)
-    atom-shield:
-      # Katman 1: Handshake Analizi
-      handshake:
+
+    # ===== SKOR EŞİKLERİ =====
+    skor-esikleri:
+      izin-ver: 30          # Bu skorun altı = serbest geçiş
+      geciktir: 60          # 30-59 arası = bağlantıyı 1-3 sn geciktir
+      at: 80                # 60-79 arası = kick at, 60 sn sonra tekrar deneyebilir
+      kara-liste: 100       # 80+ = IP kara listesine al
+
+    # ===== KONTROL MODÜLLERI =====
+    kontroller:
+      baglanti-hizi:
         aktif: true
-        # Handshake paketinde hostname zorunluluğu (oyna.sunucum.com gibi)
-        # Botlar genellikle doğrudan IP veya localhost ile bağlanır.
-        hostname-zorunlu: false
-        # Port tutarlılığı kontrolü
-        port-kontrolu: false
-      
-      # Katman 2: Protokol & Zamanlama Analizi
+        pencere-suresi-ms: 10000
+        global-esik: 20
+        ip-basina-esik: 3
+        saldiri-carpani: 1.5
+
+      ping-handshake:
+        aktif: true
+        ping-cache-suresi-dk: 5
+        ping-yok-skor-normal: 5
+        ping-yok-skor-saldiri: 15
+        saldiri-carpani: 1.0
+
+      kullanici-adi:
+        aktif: true
+        entropi-esigi: 3.5
+        benzerlik-kontrolu-sadece-saldiri: true
+        saldiri-carpani: 1.2
+
       protokol:
         aktif: true
-        # Handshake ile Login Start arasındaki minimum süre (ms)
-        # Botlar "anında" paket gönderir, insanlar JVM/Network gecikmesi yaşar.
-        min-login-gecikmesi: 0
-        # Şifreleme (Encryption) zamanlaması manipülasyonu
-        sifreleme-gecikmesi: false
-      
-      # Katman 3: Davranışsal Analiz (Limbo)
-      davranissal:
-        aktif: true
-        # Şüpheli bağlantıları Limbo dünyasına al
-        limbo-aktif: false
-        # Yerçekimi testi (Oyuncunun düşüp düşmediğini kontrol eder)
-        yercekimi-testi: false
+        client-settings-bekleme-tick: 40
+        client-brand-bekleme-tick: 20
+        saldiri-carpani: 1.0
 
-    # Benzer isim kontrolü
-    benzer-isim-kontrolu:
+      ilk-giris-davranis:
+        aktif: true
+        analiz-suresi-tick: 100
+        saldiri-carpani: 1.0
+
+      yercekimi:
+        aktif: true
+        tolerans: 0.03
+        min-veri-sayisi: 5
+        saldiri-carpani: 1.0
+
+      paket-zamanlama:
+        aktif: true
+        min-interval-ms: 30
+        max-interval-ms: 150
+        min-keepalive-ms: 5
+        saldiri-carpani: 1.0
+
+      giris-sonrasi-davranis:
+        aktif: true
+        analiz-suresi-tick: 600
+        saldiri-carpani: 1.0
+
+    # ===== SALDIRI MODU =====
+    saldiri-modu:
       aktif: true
-      # Maksimum benzer isim sayısı (Bu sayıya ulaşılırsa hepsi banlanır)
-      max-benzer-sayisi: 10
-      # İsim benzerlik farkı (Kaç karakter farklı olabilir)
-      karakter-farki: 3
-    # Bot doğrulama (Girişte hareket/etkileşim kısıtlaması)
-    dogrulama:
+      tetikleme-esigi: 15
+      pencere-suresi-sn: 5
+      kapanma-suresi-sn: 60
+      esik-carpani: 0.7
+      baglanti-kuyrugu: true
+      kuyruk-gecikme-ms: 2000
+
+    # ===== BEYAZ LİSTE =====
+    beyaz-liste:
       aktif: true
-      # Doğrulama süresi (saniye) - Oyuncu bu süre içinde hareket etmeli
-      sure: 15
-    # Ceza ayarları
-    ceza:
-      # İkinci tespitte ban süresi (dakika) - İlk tespit kickler
-      ban-suresi: 30
-      # Ban komutu ( %player% oyuncu adı )
-      ban-komutu: "ban %player% 30dk Bot saldırısı tespit edildi"
+      otomatik-dogrulama: true
+      dogrulama-suresi-tick: 600
+      dogrulama-max-skor: 15
+      oturum-sayisi-dogrulama: 3
+      dosya: "whitelist.json"
+
+    # ===== KARA LİSTE =====
+    kara-liste:
+      aktif: true
+      varsayilan-sure-dk: 60
+      max-kayit: 10000
+      temizleme-aralik-dk: 5
+      dosya: "blacklist.json"
+
+    # ===== BILDIRIMLER =====
+    bildirimler:
+      saldiri-baslangic: true
+      saldiri-bitis: true
+      yuksek-skor-kick: true
+      kara-liste-ekleme: true
+      admin-izin: "atomsmpfixer.antibot.notify"
+
+    # ===== LOGLAMA =====
+    log:
+      aktif: true
+      detayli-skor-logu: false
+      saldiri-logu: true
+      kara-liste-logu: true
 
   # Panik Modu (/panic)
   panik-modu:

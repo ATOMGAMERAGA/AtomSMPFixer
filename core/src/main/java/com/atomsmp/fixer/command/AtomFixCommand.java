@@ -7,6 +7,7 @@ import com.atomsmp.fixer.reputation.IPReputationManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -53,6 +54,7 @@ public class AtomFixCommand implements CommandExecutor {
             case "stats" -> handleStats(sender);
             case "info" -> showInfo(sender);
             case "antivpn" -> handleAntiVpn(sender, args);
+            case "antibot" -> handleAntiBot(sender, args);
             default -> plugin.getMessageManager().sendMessage(sender, "genel.bilinmeyen-komut");
         }
 
@@ -459,6 +461,66 @@ public class AtomFixCommand implements CommandExecutor {
 
         sender.sendMessage(plugin.getMessageManager().parse(
                 "<gradient:#ff6b6b:#ffa500><bold>═══════════════════════════</bold></gradient>"));
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  AntiBot Komutu — /atomfix antibot <alt_komut>
+    // ═══════════════════════════════════════════════════
+
+    private void handleAntiBot(@NotNull CommandSender sender, @NotNull String[] args) {
+        var antiBotModule = plugin.getModuleManager().getModule(com.atomsmp.fixer.module.antibot.AntiBotModule.class);
+        if (antiBotModule == null) {
+            sender.sendMessage(Component.text("AntiBot modülü yüklü değil!", NamedTextColor.RED));
+            return;
+        }
+
+        if (args.length < 2) {
+            showAntiBotHelp(sender);
+            return;
+        }
+
+        String sub = args[1].toLowerCase();
+        switch (sub) {
+            case "status" -> {
+                sender.sendMessage(plugin.getMessageManager().parse("<gradient:#00d4ff:#00ff88><bold>═══ AntiBot Durumu ═══</bold></gradient>"));
+                sender.sendMessage(Component.text("Saldırı Modu: ", NamedTextColor.GRAY)
+                        .append(Component.text(antiBotModule.getAttackTracker().isUnderAttack() ? "AKTIF" : "Normal", 
+                                antiBotModule.getAttackTracker().isUnderAttack() ? NamedTextColor.RED : NamedTextColor.GREEN)));
+                sender.sendMessage(Component.text("Kara Listedeki IP Sayısı: ", NamedTextColor.GRAY)
+                        .append(Component.text("N/A", NamedTextColor.WHITE))); // BlacklistManager doesn't expose size yet
+                sender.sendMessage(Component.text("Beyaz Listedeki Oyuncu Sayısı: ", NamedTextColor.GRAY)
+                        .append(Component.text("N/A", NamedTextColor.WHITE))); // WhitelistManager doesn't expose size yet
+                sender.sendMessage(plugin.getMessageManager().parse("<gradient:#00d4ff:#00ff88><bold>══════════════════════</bold></gradient>"));
+            }
+            case "whitelist" -> {
+                if (args.length < 3) {
+                    sender.sendMessage(Component.text("Kullanım: /atomfix antibot whitelist <oyuncu>", NamedTextColor.RED));
+                    return;
+                }
+                org.bukkit.OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
+                antiBotModule.getWhitelistManager().whitelist(target.getUniqueId());
+                sender.sendMessage(Component.text(target.getName() + " beyaz listeye eklendi.", NamedTextColor.GREEN));
+            }
+            case "blacklist" -> {
+                if (args.length < 3) {
+                    sender.sendMessage(Component.text("Kullanım: /atomfix antibot blacklist <IP> [süre_dk]", NamedTextColor.RED));
+                    return;
+                }
+                String ip = args[2];
+                long duration = args.length > 3 ? Long.parseLong(args[3]) * 60000L : 3600000L;
+                antiBotModule.getBlacklistManager().blacklist(ip, duration, "Manual blacklist by " + sender.getName());
+                sender.sendMessage(Component.text(ip + " kara listeye eklendi.", NamedTextColor.GREEN));
+            }
+            default -> showAntiBotHelp(sender);
+        }
+    }
+
+    private void showAntiBotHelp(@NotNull CommandSender sender) {
+        sender.sendMessage(plugin.getMessageManager().parse("<gradient:#00d4ff:#00ff88><bold>═══ AntiBot Komutları ═══</bold></gradient>"));
+        sender.sendMessage(Component.text("/atomfix antibot status", NamedTextColor.AQUA).append(Component.text(" - Durum özeti", NamedTextColor.GRAY)));
+        sender.sendMessage(Component.text("/atomfix antibot whitelist <oyuncu>", NamedTextColor.AQUA).append(Component.text(" - Manuel beyaz liste", NamedTextColor.GRAY)));
+        sender.sendMessage(Component.text("/atomfix antibot blacklist <IP> [süre]", NamedTextColor.AQUA).append(Component.text(" - Manuel kara liste", NamedTextColor.GRAY)));
+        sender.sendMessage(plugin.getMessageManager().parse("<gradient:#00d4ff:#00ff88><bold>════════════════════════</bold></gradient>"));
     }
 
     // ── Info ──

@@ -1,0 +1,42 @@
+package com.atomsmp.fixer.module.antibot.check;
+
+import com.atomsmp.fixer.module.antibot.AntiBotModule;
+import com.atomsmp.fixer.module.antibot.PlayerProfile;
+
+public class PostJoinBehaviorCheck extends AbstractCheck {
+    
+    public PostJoinBehaviorCheck(AntiBotModule module) {
+        super(module, "giris-sonrasi-davranis");
+    }
+
+    @Override
+    public int calculateThreatScore(PlayerProfile profile) {
+        int ticks = profile.getTicksSinceJoin();
+        int analysisTime = module.getConfigInt("kontroller.giris-sonrasi-davranis.analiz-suresi-tick", 600);
+        
+        if (ticks < analysisTime) {
+            return 0;
+        }
+
+        int score = 0;
+
+        // 1. Chat delay
+        long chatDelay = profile.getFirstChatDelayMs();
+        if (chatDelay > 0 && chatDelay < 200) {
+            score += 10;
+        }
+
+        // 2. Movement variety
+        if (profile.getUniquePositionCount() < 3) {
+            score += 5;
+        }
+
+        // 3. Interactions
+        if (module.getAttackTracker().isUnderAttack()) {
+            if (!profile.hasInteractedWithInventory()) score += 5;
+            if (!profile.hasInteractedWithWorld()) score += 3;
+        }
+
+        return Math.min(score, 25);
+    }
+}

@@ -408,9 +408,6 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.RedstoneLimiterModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.ViewDistanceMaskModule(this));
         
-        // v2.1 — Bot Koruması
-        moduleManager.registerModule(new com.atomsmp.fixer.module.BotProtectionModule(this));
-
         // v2.2 — Yeni Gelişmiş Güvenlik Modülleri
         moduleManager.registerModule(new com.atomsmp.fixer.module.FallingBlockLimiterModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.ExplosionLimiterModule(this));
@@ -425,6 +422,9 @@ public final class AtomSMPFixer extends JavaPlugin {
 
         // v2.3 — Bağlantı Hız Sınırlandırıcı
         moduleManager.registerModule(new com.atomsmp.fixer.module.ConnectionThrottleModule(this));
+
+        // v3.2 — Gelişmiş AntiBot Modülü
+        moduleManager.registerModule(new com.atomsmp.fixer.module.antibot.AntiBotModule(this));
 
         getLogger().info("Toplam " + moduleManager.getTotalModuleCount() + " modül kaydedildi.");
     }

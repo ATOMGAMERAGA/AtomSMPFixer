@@ -45,6 +45,14 @@ engelleme:
   baglanti-siniri: "<red>⚠ Too many connection attempts! Please wait a minute."
   saldiri-engel: "<red>⚠ Server is under attack. Please try again later."
 
+antibot:
+  kick-mesaji: "<red>⚠ Suspicious connection detected. Please try again in a few minutes."
+  kara-liste-mesaji: "<red>⛔ This IP address has been temporarily blocked."
+  saldiri-basladi: "<gold>⚠ Bot attack detected! Protection level increased."
+  saldiri-bitti: "<green>✅ Bot attack ended. Returned to normal mode."
+  oyuncu-dogrulandi: "<green>✅ {oyuncu} passed bot protection verification."
+  skor-bilgi: "<gray>Threat score: <yellow>{skor}</yellow> | Status: {durum}"
+
 bildirim:
   # Admin notifications
   admin-uyari: "<gold>[AtomSMPFixer] <yellow>{oyuncu} <gray>detected using <red>{exploit} <gray>exploit!"

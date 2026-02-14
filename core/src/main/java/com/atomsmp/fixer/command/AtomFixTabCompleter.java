@@ -23,11 +23,15 @@ public class AtomFixTabCompleter implements TabCompleter {
     private final AtomSMPFixer plugin;
 
     private static final List<String> MAIN_COMMANDS = Arrays.asList(
-        "reload", "status", "toggle", "stats", "info", "antivpn"
+        "reload", "status", "toggle", "stats", "info", "antivpn", "antibot"
     );
 
     private static final List<String> ANTIVPN_SUBS = Arrays.asList(
         "stats", "refresh", "check", "add", "remove", "whitelist", "recent"
+    );
+
+    private static final List<String> ANTIBOT_SUBS = Arrays.asList(
+        "status", "whitelist", "blacklist", "reset", "score"
     );
 
     private static final List<String> WHITELIST_ACTIONS = Arrays.asList("add", "remove");
@@ -54,6 +58,9 @@ public class AtomFixTabCompleter implements TabCompleter {
             }
             if (sub.equals("antivpn")) {
                 return filterSuggestions(ANTIVPN_SUBS, args[1]);
+            }
+            if (sub.equals("antibot")) {
+                return filterSuggestions(ANTIBOT_SUBS, args[1]);
             }
         }
 

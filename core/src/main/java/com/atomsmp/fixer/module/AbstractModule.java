@@ -153,13 +153,23 @@ public abstract class AbstractModule implements IModule {
     }
 
     /**
+     * Ana plugin instance alır
+     *
+     * @return AtomSMPFixer instance
+     */
+    @NotNull
+    public AtomSMPFixer getPlugin() {
+        return plugin;
+    }
+
+    /**
      * Config'den boolean değer alır
      *
      * @param key Config anahtarı (moduller.{modül_adı}. otomatik eklenir)
      * @param def Varsayılan değer
      * @return Config değeri
      */
-    protected boolean getConfigBoolean(@NotNull String key, boolean def) {
+    public boolean getConfigBoolean(@NotNull String key, boolean def) {
         return plugin.getConfigManager().getBoolean("moduller." + name + "." + key, def);
     }
 
@@ -170,7 +180,7 @@ public abstract class AbstractModule implements IModule {
      * @param def Varsayılan değer
      * @return Config değeri
      */
-    protected int getConfigInt(@NotNull String key, int def) {
+    public int getConfigInt(@NotNull String key, int def) {
         return plugin.getConfigManager().getInt("moduller." + name + "." + key, def);
     }
 
@@ -181,7 +191,7 @@ public abstract class AbstractModule implements IModule {
      * @param def Varsayılan değer
      * @return Config değeri
      */
-    protected long getConfigLong(@NotNull String key, long def) {
+    public long getConfigLong(@NotNull String key, long def) {
         return plugin.getConfigManager().getLong("moduller." + name + "." + key, def);
     }
 
@@ -192,7 +202,7 @@ public abstract class AbstractModule implements IModule {
      * @param def Varsayılan değer
      * @return Config değeri
      */
-    protected double getConfigDouble(@NotNull String key, double def) {
+    public double getConfigDouble(@NotNull String key, double def) {
         return plugin.getConfigManager().getDouble("moduller." + name + "." + key, def);
     }
 
@@ -204,7 +214,7 @@ public abstract class AbstractModule implements IModule {
      * @return Config değeri
      */
     @NotNull
-    protected String getConfigString(@NotNull String key, @NotNull String def) {
+    public String getConfigString(@NotNull String key, @NotNull String def) {
         return plugin.getConfigManager().getString("moduller." + name + "." + key, def);
     }
 
@@ -213,7 +223,7 @@ public abstract class AbstractModule implements IModule {
      *
      * @param message Log mesajı
      */
-    protected void debug(@NotNull String message) {
+    public void debug(@NotNull String message) {
         if (plugin.getConfigManager().isDebugEnabled()) {
             plugin.getLogManager().debug("[" + name + "] " + message);
         }
@@ -224,7 +234,7 @@ public abstract class AbstractModule implements IModule {
      *
      * @param message Log mesajı
      */
-    protected void info(@NotNull String message) {
+    public void info(@NotNull String message) {
         plugin.getLogManager().info("[" + name + "] " + message);
     }
 
@@ -233,7 +243,7 @@ public abstract class AbstractModule implements IModule {
      *
      * @param message Log mesajı
      */
-    protected void warning(@NotNull String message) {
+    public void warning(@NotNull String message) {
         plugin.getLogManager().warning("[" + name + "] " + message);
     }
 
@@ -242,7 +252,7 @@ public abstract class AbstractModule implements IModule {
      *
      * @param message Log mesajı
      */
-    protected void error(@NotNull String message) {
+    public void error(@NotNull String message) {
         plugin.getLogManager().error("[" + name + "] " + message);
     }
 
@@ -252,7 +262,7 @@ public abstract class AbstractModule implements IModule {
      * @param playerName Oyuncu adı
      * @param details Detaylar
      */
-    protected void logExploit(@NotNull String playerName, @NotNull String details) {
+    public void logExploit(@NotNull String playerName, @NotNull String details) {
         plugin.getLogManager().logExploit(playerName, name, details);
         // v2.3 — Discord webhook notification
         if (plugin.getDiscordWebhookManager() != null) {
