@@ -21,6 +21,13 @@ public class VerificationManager {
 
     public void startVerification(Player player, PlayerProfile profile) {
         if (module.getWhitelistManager().isWhitelisted(player.getUniqueId())) return;
+        
+        if (module.getPlugin().getVerifiedPlayerCache() != null && 
+            module.getPlugin().getVerifiedPlayerCache().isVerified(player.getName(), profile.getIpAddress())) {
+            if (module.getPlugin().getVerifiedPlayerCache().shouldSkipBotCheck()) {
+                return;
+            }
+        }
 
         BukkitTask task = new BukkitRunnable() {
             @Override

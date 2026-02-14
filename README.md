@@ -1,8 +1,8 @@
-# <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/shield-halved.svg" width="32" height="32"> AtomSMPFixer v3.2.0
+# <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/shield-halved.svg" width="32" height="32"> AtomSMPFixer v3.3.1
 
 [![Build Status](https://github.com/ATOMGAMERAGA/AtomSMPFixer/actions/workflows/build.yml/badge.svg)](https://github.com/ATOMGAMERAGA/AtomSMPFixer/actions/workflows/build.yml)
 [![Release](https://github.com/ATOMGAMERAGA/AtomSMPFixer/actions/workflows/release.yml/badge.svg)](https://github.com/ATOMGAMERAGA/AtomSMPFixer/actions/workflows/release.yml)
-[![Version](https://img.shields.io/badge/version-3.2.0-brightgreen.svg)](https://github.com/ATOMGAMERAGA/AtomSMPFixer/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.3.1-brightgreen.svg)](https://github.com/ATOMGAMERAGA/AtomSMPFixer/releases/latest)
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![Paper](https://img.shields.io/badge/Paper-1.21.4-blue.svg)](https://papermc.io/)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)](LICENSE)

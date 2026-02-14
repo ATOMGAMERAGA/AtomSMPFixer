@@ -189,6 +189,13 @@ public class AntiBotModule extends AbstractModule implements Listener {
         if (whitelistManager.isWhitelisted(uuid)) {
             return;
         }
+
+        // Verified player cache check
+        if (plugin.getVerifiedPlayerCache() != null && plugin.getVerifiedPlayerCache().isVerified(name, ip)) {
+            if (plugin.getVerifiedPlayerCache().shouldSkipBotCheck()) {
+                return;
+            }
+        }
         
         attackTracker.recordConnection();
         

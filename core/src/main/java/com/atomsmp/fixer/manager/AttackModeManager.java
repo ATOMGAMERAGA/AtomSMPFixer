@@ -197,6 +197,11 @@ public class AttackModeManager {
     public boolean shouldBlockConnection(String ip) {
         if (!attackMode) return false;
 
+        // Check persistent cache first
+        if (plugin.getVerifiedPlayerCache() != null && plugin.getVerifiedPlayerCache().isIpVerified(ip)) {
+            return false;
+        }
+
         // Whitelist-only mode: block ALL non-verified
         if (actionWhitelistOnly) {
             if (!verifiedIps.contains(ip)) {

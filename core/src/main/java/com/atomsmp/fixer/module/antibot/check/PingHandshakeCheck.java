@@ -17,7 +17,7 @@ public class PingHandshakeCheck extends AbstractCheck {
         if (lastPing == 0) {
             // No ping recorded for this IP
             return module.getAttackTracker().isUnderAttack() ? 
-                    module.getConfigInt("kontroller.ping-handshake.ping-yok-skor-saldiri", 15) : 
+                    module.getConfigInt("kontroller.ping-handshake.ping-yok-skor-saldiri", 10) : 
                     module.getConfigInt("kontroller.ping-handshake.ping-yok-skor-normal", 5);
         }
 

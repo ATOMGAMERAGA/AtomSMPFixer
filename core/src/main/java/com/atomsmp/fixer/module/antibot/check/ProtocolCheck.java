@@ -22,16 +22,16 @@ public class ProtocolCheck extends AbstractCheck {
         int ticks = profile.getTicksSinceJoin();
 
         // 1. Client Settings check
-        int settingsWait = module.getConfigInt("kontroller.protokol.client-settings-bekleme-tick", 40);
+        int settingsWait = module.getConfigInt("kontroller.protokol.client-settings-bekleme-tick", 100);
         if (!profile.hasSentClientSettings() && ticks > settingsWait) {
-            score += 25;
+            score += 15;
         }
 
         // 2. Client Brand check
-        int brandWait = module.getConfigInt("kontroller.protokol.client-brand-bekleme-tick", 20);
+        int brandWait = module.getConfigInt("kontroller.protokol.client-brand-bekleme-tick", 60);
         String brand = profile.getClientBrand();
         if (brand == null && ticks > brandWait) {
-            score += 15;
+            score += 10;
         } else if (brand != null) {
             if (brand.length() > 64) score += 15;
             else if (brand.isEmpty()) score += 10;

@@ -37,7 +37,7 @@ public class ConnectionRateCheck extends AbstractCheck {
         int ipThreshold = module.getConfigInt("kontroller.baglanti-hizi.ip-basina-esik", 3);
 
         if (globalRate > globalThreshold) {
-            score += Math.min((globalRate - globalThreshold) * 2, 30);
+            score += Math.min((globalRate - globalThreshold), 10);
         }
 
         if (ipRate > ipThreshold) {

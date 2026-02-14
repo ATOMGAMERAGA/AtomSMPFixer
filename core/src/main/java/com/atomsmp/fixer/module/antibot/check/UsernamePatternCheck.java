@@ -27,7 +27,7 @@ public class UsernamePatternCheck extends AbstractCheck {
         // 1. Bot patterns
         for (Pattern p : BOT_PATTERNS) {
             if (p.matcher(name).matches()) {
-                score += 15;
+                score += 10;
                 break;
             }
         }

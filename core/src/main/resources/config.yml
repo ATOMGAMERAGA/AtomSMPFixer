@@ -1,11 +1,11 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║    v2.4.0 — Gelişmiş Anti-VPN Sistemi       ║
+# ║    v3.3.1 — Bot Koruma İyileştirmeleri       ║
 # ╚══════════════════════════════════════════════╝
 
 # Config Versiyonu (Değiştirmeyin)
-config-version: "3.3.0"
+config-version: "3.3.1"
 
 # Genel Ayarlar
 genel:
