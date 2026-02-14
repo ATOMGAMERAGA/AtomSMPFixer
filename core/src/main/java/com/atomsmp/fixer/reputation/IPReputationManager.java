@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
+import com.atomsmp.fixer.api.IReputationService;
+
 /**
  * Gelişmiş Çok Katmanlı IP İtibar ve Proxy/VPN Tespit Sistemi v2.4.0
  *
@@ -49,7 +51,7 @@ import java.util.logging.Level;
  * @author AtomSMP
  * @version 2.4.0
  */
-public class IPReputationManager {
+public class IPReputationManager implements IReputationService {
 
     private final AtomSMPFixer plugin;
 
@@ -484,6 +486,42 @@ public class IPReputationManager {
      */
     public boolean removeFromWhitelist(@NotNull String ip) {
         return whitelistedIps.remove(ip);
+    }
+
+    // ═══════════════════════════════════════════════════
+    //  IReputationService İmplementasyonu
+    // ═══════════════════════════════════════════════════
+
+    @Override
+    public boolean isVPN(@NotNull String ipAddress) {
+        // Hızlı kontrol (Senkron)
+        CheckDetail detail = checkIpDetailed(ipAddress);
+        return detail.isBlocked();
+    }
+
+    @Override
+    public boolean isBlocked(@NotNull String ipAddress) {
+        return manualBlocklist.contains(ipAddress) || (proxyListEnabled && proxyIpSet.contains(ipAddress));
+    }
+
+    @Override
+    public void blockIP(@NotNull String ipAddress) {
+        addToManualBlocklist(ipAddress);
+    }
+
+    @Override
+    public void unblockIP(@NotNull String ipAddress) {
+        removeFromManualBlocklist(ipAddress);
+    }
+
+    @Override
+    public @NotNull Set<String> getBlockedIPs() {
+        return Collections.unmodifiableSet(manualBlocklist);
+    }
+
+    @Override
+    public boolean isWhitelisted(@NotNull String ipAddress) {
+        return whitelistedIps.contains(ipAddress);
     }
 
     // ═══════════════════════════════════════════════════

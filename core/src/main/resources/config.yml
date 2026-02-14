@@ -20,6 +20,19 @@ genel:
     # Eski logları silme süresi (gün, 0 = hiçbir zaman silme)
     log-saklama-gunu: 7
 
+# Veritabanı Ayarları
+database:
+  # Depolama tipi: MYSQL, SQLITE, FLATFILE (Henüz sadece MySQL aktif)
+  type: "FLATFILE"
+  # MySQL Ayarları
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "atomsmpfixer"
+    username: "root"
+    password: ""
+    use-ssl: false
+
 # Web Panel Ayarları
 web-panel:
   # Web panelini aktif et

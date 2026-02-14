@@ -1,6 +1,8 @@
 package com.atomsmp.fixer;
 
 import com.atomsmp.fixer.api.AtomSMPFixerAPI;
+import com.atomsmp.fixer.api.storage.IStorageProvider;
+import com.atomsmp.fixer.storage.MySQLStorageProvider;
 import com.atomsmp.fixer.command.AtomFixCommand;
 import com.atomsmp.fixer.command.AtomFixTabCompleter;
 import com.atomsmp.fixer.listener.BukkitListener;
@@ -40,6 +42,9 @@ public final class AtomSMPFixer extends JavaPlugin {
     private MessageManager messageManager;
     private LogManager logManager;
     private ModuleManager moduleManager;
+    
+    // Storage Provider
+    private IStorageProvider storageProvider;
     
     // Attack Mode Manager
     private AttackModeManager attackModeManager;
@@ -175,6 +180,11 @@ public final class AtomSMPFixer extends JavaPlugin {
         // v3.0 — API kapat
         AtomSMPFixerAPI.shutdown();
 
+        // Storage Provider kapat
+        if (storageProvider != null && storageProvider.isConnected()) {
+            storageProvider.disconnect();
+        }
+
         getLogger().info("AtomSMPFixer başarıyla kapatıldı.");
     }
 
@@ -206,6 +216,26 @@ public final class AtomSMPFixer extends JavaPlugin {
         // v2.3 — Verified Player Cache
         this.verifiedPlayerCache = new VerifiedPlayerCache(this);
         verifiedPlayerCache.start();
+
+        // Storage Provider
+        try {
+            String storageType = configManager.getConfig().getString("database.type", "FLATFILE");
+            if ("MYSQL".equalsIgnoreCase(storageType)) {
+                String host = configManager.getConfig().getString("database.mysql.host", "localhost");
+                int port = configManager.getConfig().getInt("database.mysql.port", 3306);
+                String db = configManager.getConfig().getString("database.mysql.database", "atomsmpfixer");
+                String user = configManager.getConfig().getString("database.mysql.username", "root");
+                String pass = configManager.getConfig().getString("database.mysql.password", "");
+                boolean ssl = configManager.getConfig().getBoolean("database.mysql.use-ssl", false);
+
+                MySQLStorageProvider provider = new MySQLStorageProvider(host, port, db, user, pass, ssl);
+                provider.connect();
+                this.storageProvider = provider;
+                getLogger().info("MySQL bağlantısı başarılı.");
+            }
+        } catch (Exception e) {
+            getLogger().severe("Veritabanı bağlantısı başarısız: " + e.getMessage());
+        }
 
         // Attack Mode Manager
         this.attackModeManager = new AttackModeManager(this);
@@ -393,9 +423,9 @@ public final class AtomSMPFixer extends JavaPlugin {
     private void initializeAPI() {
         new AtomSMPFixerAPI(
                 moduleManager,
-                null, // StorageProvider Sprint 2'de eklenecek
+                storageProvider,
                 statisticsManager,
-                null, // ReputationService Sprint 2'de implement edilecek
+                reputationManager,
                 getDescription().getVersion()
         );
         getLogger().info("AtomSMPFixer API v3.0 başlatıldı.");

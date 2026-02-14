@@ -1,0 +1,4 @@
+# AtomSMPFixer Velocity Config
+debug: true
+log-connections: true
+kick-message: "<red>AtomSMPFixer: Bağlantınız reddedildi."
