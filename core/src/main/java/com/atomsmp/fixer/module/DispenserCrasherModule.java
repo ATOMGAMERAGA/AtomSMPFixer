@@ -69,6 +69,7 @@ public class DispenserCrasherModule extends AbstractModule implements Listener {
         }
 
         Block block = event.getBlock();
+        // ... (existing code for BlockDispenseEvent) ...
         Material dispensed = event.getItem().getType();
 
         // Sadece dispenser ve dropper'ları kontrol et
@@ -112,6 +113,31 @@ public class DispenserCrasherModule extends AbstractModule implements Listener {
         // Chunk boundary kontrolü
         if (!isSameChunk(dispenserLoc, targetLoc)) {
             debug("Dispenser hedefi farklı chunk'ta (normal)");
+        }
+    }
+
+    // CR-10: Add listener for InventoryMoveItemEvent to check for NBT inside dispensers
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onInventoryMove(org.bukkit.event.inventory.InventoryMoveItemEvent event) {
+        if (!isEnabled()) return;
+        
+        org.bukkit.inventory.ItemStack item = event.getItem();
+        // Check if destination is dispenser/dropper
+        if (event.getDestination().getType() == org.bukkit.event.inventory.InventoryType.DISPENSER ||
+            event.getDestination().getType() == org.bukkit.event.inventory.InventoryType.DROPPER) {
+            
+            // Check NBT using NBTUtils/NBTCrasherModule logic if possible
+            if (com.atomsmp.fixer.util.NBTUtils.estimateNBTSize(item) > 200000) { // Limit from config ideally
+                event.setCancelled(true);
+                incrementBlockedCount();
+                logExploit("SYSTEM", "Dispenser'a aşırı büyük NBT item girişi engellendi");
+            }
+            
+            // Check Shulker Boxes
+            if (item.getType().name().contains("SHULKER_BOX")) {
+                // Perform deep check or block moving shulkers into dispensers if desired
+                // For now, size check above handles most NBT bombs
+            }
         }
     }
 

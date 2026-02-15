@@ -378,7 +378,6 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.TooManyBooksModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.PacketDelayModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.PacketExploitModule(this));
-        moduleManager.registerModule(new com.atomsmp.fixer.module.CustomPayloadModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.CommandsCrashModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.CreativeItemsModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.SignCrasherModule(this));
@@ -396,6 +395,15 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.BundleDuplicationModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.NormalizeCoordinatesModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.FrameCrashModule(this));
+        
+        // NEW-01: Chunk Crash Module
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ChunkCrashModule(this));
+        
+        // NEW-02 -> NEW-05: Ek Güvenlik Modülleri
+        moduleManager.registerModule(new com.atomsmp.fixer.module.AnvilCraftCrashModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.EntityInteractCrashModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ContainerCrashModule(this));
+        moduleManager.registerModule(new com.atomsmp.fixer.module.ComponentCrashModule(this));
 
         // v2.0 — Yeni güvenlik modülleri
         moduleManager.registerModule(new com.atomsmp.fixer.module.TokenBucketModule(this));

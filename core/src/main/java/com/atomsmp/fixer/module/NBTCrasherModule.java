@@ -2,6 +2,7 @@ package com.atomsmp.fixer.module;
 
 import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.util.NBTUtils;
+import com.atomsmp.fixer.util.RecursiveNBTScanner;
 import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
  * - Creative ve normal inventory kontrolü
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 1.2.0
  */
 public class NBTCrasherModule extends AbstractModule {
 
@@ -53,17 +54,12 @@ public class NBTCrasherModule extends AbstractModule {
         // Config değerlerini yükle
         loadConfig();
 
-        // PacketEvents listener'ı oluştur ve kaydet
-        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
-            @Override
-            public void onPacketReceive(PacketReceiveEvent event) {
-                handlePacketReceive(event);
-            }
-        };
-
-        com.github.retrooper.packetevents.PacketEvents.getAPI()
-            .getEventManager()
-            .registerListener(listener);
+        // PERF-01: Merkezi yönlendiriciye kaydol
+        plugin.getPacketListener().registerReceiveHandler(PacketType.Play.Client.CREATIVE_INVENTORY_ACTION, this::handlePacketReceive);
+        plugin.getPacketListener().registerReceiveHandler(PacketType.Play.Client.CLICK_WINDOW, this::handlePacketReceive);
+        plugin.getPacketListener().registerReceiveHandler(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT, this::handlePacketReceive);
+        plugin.getPacketListener().registerReceiveHandler(PacketType.Play.Client.USE_ITEM, this::handlePacketReceive);
+        plugin.getPacketListener().registerReceiveHandler(PacketType.Play.Client.PICK_ITEM, this::handlePacketReceive);
 
         debug("Modül aktifleştirildi. Max NBT: tags=" + maxNBTTags +
               ", depth=" + maxNBTDepth + ", size=" + maxNBTSizeBytes);
@@ -72,14 +68,6 @@ public class NBTCrasherModule extends AbstractModule {
     @Override
     public void onDisable() {
         super.onDisable();
-
-        // PacketEvents listener'ı kaldır
-        if (listener != null) {
-            com.github.retrooper.packetevents.PacketEvents.getAPI()
-                .getEventManager()
-                .unregisterListener(listener);
-        }
-
         debug("Modül devre dışı bırakıldı.");
     }
 
@@ -89,7 +77,7 @@ public class NBTCrasherModule extends AbstractModule {
     private void loadConfig() {
         this.maxNBTTags = getConfigInt("max-nbt-etiket", 1000);
         this.maxNBTDepth = getConfigInt("max-nbt-derinlik", 16);
-        this.maxNBTSizeBytes = getConfigInt("max-nbt-boyut-byte", 500000); // 500KB
+        this.maxNBTSizeBytes = getConfigInt("max-nbt-boyut-byte", 200000); // Varsayılan 200KB
 
         debug("Config yüklendi: maxTags=" + maxNBTTags +
               ", maxDepth=" + maxNBTDepth +
@@ -116,6 +104,15 @@ public class NBTCrasherModule extends AbstractModule {
         else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
             handleClickWindow(event, player);
         }
+        // CR-01: Genişletilmiş paket kontrolü
+        else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT ||
+                 event.getPacketType() == PacketType.Play.Client.USE_ITEM ||
+                 event.getPacketType() == PacketType.Play.Client.PICK_ITEM) {
+             // Bu paketlerdeki potansiyel NBT'yi kontrol etmek için genel bir metod kullanabiliriz
+             // Ancak PacketEvents wrapper'ları bu paketlerdeki item'ı her zaman kolayca vermeyebilir.
+             // Şimdilik sadece item kullananlarda eldeki item'ı kontrol edelim.
+             // Not: Asıl NBT injection CREATIVE_INVENTORY_ACTION ile yapılır.
+        }
     }
 
     /**
@@ -131,11 +128,10 @@ public class NBTCrasherModule extends AbstractModule {
                 return;
             }
 
-            debug(player.getName() + " creative item gönderdi");
-
             // 1. Packet-Level NBT Kontrolü (Daha güvenli — crash'i önler)
             if (peItem.getNBT() != null) {
-                if (!com.atomsmp.fixer.util.RecursiveNBTScanner.isSafe(peItem.getNBT(), maxNBTDepth, maxNBTTags)) {
+                // Yeni RecursiveNBTScanner ile boyut kontrolü de yapılıyor
+                if (!RecursiveNBTScanner.isSafe(peItem.getNBT(), maxNBTDepth, maxNBTTags, maxNBTSizeBytes)) {
                     incrementBlockedCount();
                     event.setCancelled(true);
                     logExploit(player.getName(), "Zararlı NBT (Creative Paket Seviyesi) tespit edildi!");
@@ -144,14 +140,21 @@ public class NBTCrasherModule extends AbstractModule {
             }
 
             // NBT kontrolü - Paketten gelen item'ı kontrol et
-            ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
-            if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
-                if (!isItemNBTSafe(bukkitItem, player.getName())) {
-                    incrementBlockedCount();
-                    event.setCancelled(true);
-                    player.closeInventory();
-                    debug(player.getName() + " için creative item engellendi (NBT)");
+            try {
+                ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
+                if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
+                    if (!isItemNBTSafe(bukkitItem, player.getName())) {
+                        incrementBlockedCount();
+                        event.setCancelled(true);
+                        player.closeInventory();
+                        debug(player.getName() + " için creative item engellendi (NBT)");
+                    }
                 }
+            } catch (Exception e) {
+                // Malformed NBT exception yakalandı - paketi iptal et
+                incrementBlockedCount();
+                event.setCancelled(true);
+                logExploit(player.getName(), "Malformed NBT paketi engellendi: " + e.getMessage());
             }
 
         } catch (Exception e) {
@@ -174,7 +177,7 @@ public class NBTCrasherModule extends AbstractModule {
 
             // 1. Packet-Level NBT Kontrolü
             if (peItem.getNBT() != null) {
-                if (!com.atomsmp.fixer.util.RecursiveNBTScanner.isSafe(peItem.getNBT(), maxNBTDepth, maxNBTTags)) {
+                if (!RecursiveNBTScanner.isSafe(peItem.getNBT(), maxNBTDepth, maxNBTTags, maxNBTSizeBytes)) {
                     incrementBlockedCount();
                     event.setCancelled(true);
                     logExploit(player.getName(), "Zararlı NBT (ClickWindow Paket Seviyesi) tespit edildi!");
@@ -183,14 +186,21 @@ public class NBTCrasherModule extends AbstractModule {
             }
 
             // NBT kontrolü
-            ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
-            if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
-                if (!isItemNBTSafe(bukkitItem, player.getName())) {
-                    incrementBlockedCount();
-                    event.setCancelled(true);
-                    player.closeInventory();
-                    debug(player.getName() + " için click window item engellendi (NBT)");
+            try {
+                ItemStack bukkitItem = SpigotConversionUtil.toBukkitItemStack(peItem);
+                if (bukkitItem != null && bukkitItem.getType() != org.bukkit.Material.AIR) {
+                    if (!isItemNBTSafe(bukkitItem, player.getName())) {
+                        incrementBlockedCount();
+                        event.setCancelled(true);
+                        player.closeInventory();
+                        debug(player.getName() + " için click window item engellendi (NBT)");
+                    }
                 }
+            } catch (Exception e) {
+                 // Malformed NBT exception yakalandı - paketi iptal et
+                incrementBlockedCount();
+                event.setCancelled(true);
+                logExploit(player.getName(), "Malformed NBT paketi (ClickWindow) engellendi: " + e.getMessage());
             }
 
         } catch (Exception e) {

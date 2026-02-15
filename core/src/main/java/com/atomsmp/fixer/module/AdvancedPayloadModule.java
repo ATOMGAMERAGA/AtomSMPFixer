@@ -65,14 +65,9 @@ public class AdvancedPayloadModule extends AbstractModule {
         super.onEnable();
         loadConfig();
 
-        listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
-            @Override
-            public void onPacketReceive(PacketReceiveEvent event) {
-                handlePacketReceive(event);
-            }
-        };
+        // PERF-01: Merkezi yönlendiriciye kaydol
+        plugin.getPacketListener().registerReceiveHandler(PacketType.Play.Client.PLUGIN_MESSAGE, this::handlePacketReceive);
 
-        PacketEvents.getAPI().getEventManager().registerListener(listener);
         debug("Gelişmiş payload filtresi başlatıldı. Max boyut: " + maxPayloadBytes +
                 " byte, İzinli kanal: " + allowedChannels.size());
     }
@@ -80,11 +75,6 @@ public class AdvancedPayloadModule extends AbstractModule {
     @Override
     public void onDisable() {
         super.onDisable();
-
-        if (listener != null) {
-            PacketEvents.getAPI().getEventManager().unregisterListener(listener);
-        }
-
         playerBrands.clear();
         debug("Gelişmiş payload filtresi durduruldu.");
     }
@@ -153,6 +143,23 @@ public class AdvancedPayloadModule extends AbstractModule {
             // 5. Brand analizi
             if ("minecraft:brand".equals(channel) && data != null) {
                 analyzeBrand(player, data);
+            }
+            
+            // 6. CR-07: Register/Unregister kanal sayısı ve uzunluk kontrolü
+            if (channel.equals("minecraft:register") || channel.equals("minecraft:unregister")) {
+                if (data == null) return;
+                String channels = new String(data, StandardCharsets.UTF_8);
+                String[] parts = channels.split("\0");
+                if (parts.length > 100) { // Limit: 100 channels per packet
+                    blockPacket(event, player, "Çok fazla kanal kaydı isteği: " + parts.length);
+                    return;
+                }
+                for (String c : parts) {
+                    if (c.length() > 256) {
+                        blockPacket(event, player, "Çok uzun kanal ismi: " + c.length());
+                        return;
+                    }
+                }
             }
 
         } catch (Exception e) {

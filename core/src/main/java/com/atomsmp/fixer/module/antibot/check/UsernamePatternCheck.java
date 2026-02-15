@@ -9,7 +9,8 @@ public class UsernamePatternCheck extends AbstractCheck {
     
     private static final List<Pattern> BOT_PATTERNS = List.of(
         Pattern.compile("^(Bot|Player|User|Test|Hack|Attack|Spam|Storm)[-_]?\\d{1,5}$", Pattern.CASE_INSENSITIVE),
-        Pattern.compile("^[a-z]{3,5}\\d{4,8}$"),
+        // FP-04: Daha spesifik pattern (örn. çok uzun sayı dizisiyle bitenler)
+        Pattern.compile("^[a-z]{2,3}\\d{6,10}$"),
         Pattern.compile("^\\d+[a-z]+\\d+$")
     );
 
@@ -27,18 +28,18 @@ public class UsernamePatternCheck extends AbstractCheck {
         // 1. Bot patterns
         for (Pattern p : BOT_PATTERNS) {
             if (p.matcher(name).matches()) {
-                score += 10;
+                score += 5; // 10'dan 5'e düşürüldü
                 break;
             }
         }
 
-        // 2. Length
-        if (name.length() <= 3) score += 3;
+        // 2. Length (FP-04: Kısa isim penaltisi kaldırıldı)
+        // if (name.length() <= 3) score += 3;
 
         // 3. Entropy
-        double entropyThreshold = module.getConfigDouble("kontroller.kullanici-adi.entropi-esigi", 3.5);
+        double entropyThreshold = module.getConfigDouble("kontroller.kullanici-adi.entropi-esigi", 4.0);
         if (name.length() >= 10 && calculateEntropy(name) > entropyThreshold) {
-            score += 10;
+            score += 5; // 10'dan 5'e düşürüldü
         }
 
         // 4. Similarity
@@ -48,7 +49,7 @@ public class UsernamePatternCheck extends AbstractCheck {
         }
 
         module.getAttackTracker().recordUsername(name);
-        return Math.min(score, 35);
+        return Math.min(score, 20); // 35'den 20'ye düşürüldü
     }
 
     private double calculateEntropy(String name) {

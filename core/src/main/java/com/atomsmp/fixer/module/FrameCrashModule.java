@@ -59,6 +59,9 @@ public class FrameCrashModule extends AbstractModule implements Listener {
 
         // Event listener kaydet
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        
+        // CR-05: Periyodik temizlik görevi (5 dakikada bir)
+        plugin.getServer().getScheduler().runTaskTimer(plugin, this::cleanup, 6000L, 6000L);
 
         debug("Modül aktifleştirildi. Max frame: " + maxFramesPerChunk + ", Max armor stand: " + maxArmorStandsPerChunk);
     }
@@ -73,8 +76,45 @@ public class FrameCrashModule extends AbstractModule implements Listener {
 
         // Event listener'ı kaldır
         EntitySpawnEvent.getHandlerList().unregister(this);
+        // Remove event handlers
+        org.bukkit.event.entity.EntityDeathEvent.getHandlerList().unregister(this);
+        org.bukkit.event.entity.EntityRemoveEvent.getHandlerList().unregister(this);
+        org.bukkit.event.world.ChunkUnloadEvent.getHandlerList().unregister(this);
 
         debug("Modül devre dışı bırakıldı.");
+    }
+    
+    // CR-05: Entity silinme takibi
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityRemove(org.bukkit.event.entity.EntityRemoveEvent event) {
+        handleEntityRemoval(event.getEntity());
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDeath(org.bukkit.event.entity.EntityDeathEvent event) {
+        handleEntityRemoval(event.getEntity());
+    }
+    
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChunkUnload(org.bukkit.event.world.ChunkUnloadEvent event) {
+        clearChunk(event.getChunk());
+    }
+    
+    private void handleEntityRemoval(Entity entity) {
+        if (!isEnabled()) return;
+        
+        EntityType type = entity.getType();
+        if (type == EntityType.ITEM_FRAME || type == EntityType.GLOW_ITEM_FRAME) {
+            ChunkKey key = new ChunkKey(entity.getLocation().getChunk());
+            if (frameCounts.containsKey(key)) {
+                frameCounts.get(key).decrementAndGet();
+            }
+        } else if (type == EntityType.ARMOR_STAND) {
+            ChunkKey key = new ChunkKey(entity.getLocation().getChunk());
+            if (armorStandCounts.containsKey(key)) {
+                armorStandCounts.get(key).decrementAndGet();
+            }
+        }
     }
 
     /**

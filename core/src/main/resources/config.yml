@@ -1,11 +1,11 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║    v3.3.1 — Bot Koruma İyileştirmeleri       ║
+# ║    v3.3.2 — FP İyileştirmeleri ve Güvenlik   ║
 # ╚══════════════════════════════════════════════╝
 
 # Config Versiyonu (Değiştirmeyin)
-config-version: "3.3.1"
+config-version: "3.3.2"
 
 # Genel Ayarlar
 genel:
@@ -110,6 +110,8 @@ anti-vpn:
   cache-hours: 24
   # Risk eşiği (0-100) — Botlar genelde 60+. Düşürürseniz daha katı olur.
   risk-threshold: 60
+  # FP-02: Hosting IP'leri engellensin mi? (Varsayılan false, meşru oyuncuları korur)
+  hosting-engelle: false
   # Engellenen ülkeler (ISO Kodları, örn: "CN", "RU", "US")
   blocked-countries: []
   # Admin'lere oyun içi bildirim gönder (proxy engellenince, liste güncellenince)
@@ -238,6 +240,14 @@ moduller:
     zaman-penceresi-ms: 1000
     # Kara listedeki paket türleri
     kara-liste-paketler: []
+    # CR-08: Tür bazlı limitler
+    tur-bazli-limitler:
+      PLUGIN_MESSAGE: 50
+      CLICK_WINDOW: 100
+      CREATIVE_INVENTORY_ACTION: 50
+      EDIT_BOOK: 5
+      UPDATE_SIGN: 10
+      CHAT_MESSAGE: 20
 
   # CustomPayload düzeltmesi
   ozel-payload:
@@ -283,7 +293,8 @@ moduller:
   tabela-crash:
     aktif: true
     # Maksimum satır uzunluğu (vanilla: ~384 karakter)
-    max-satir-uzunlugu: 384
+    # CR-04: Güvenlik için 100'e düşürüldü
+    max-satir-uzunlugu: 100
     # Renk kodlarını temizle
     renk-kodlarini-temizle: false
     # Özel karakterleri engelle (Unicode taşması koruması)
@@ -314,6 +325,8 @@ moduller:
     max-nbt-derinlik: 16
     # Maksimum NBT boyutu (byte)
     max-nbt-boyut-byte: 500000
+    # CR-01: Paket seviyesi boyut limiti
+    max-nbt-boyut-paket: 200000
 
   # Kitap crash düzeltmesi
   kitap-crash:
@@ -324,6 +337,8 @@ moduller:
     max-sayfa-sayisi: 100
     # Sayfa başına maksimum boyut
     max-sayfa-boyutu: 1024
+    # CR-03: JSON derinlik limiti
+    json-derinlik-limiti: 5
     # Maksimum toplam kitap boyutu
     max-toplam-kitap-boyutu: 100000
 
@@ -379,6 +394,33 @@ moduller:
     # Chunk başına maksimum armor stand sayısı
     chunk-basina-max-armor-stand: 50
 
+  # NEW-01: Chunk Crash Koruması
+  chunk-crash:
+    aktif: true
+    saniyede-max-chunk-yuklemesi: 20
+    max-entity-per-chunk-warn: 200
+    max-tile-entity-per-chunk-warn: 100
+
+  # NEW-02: Anvil ve Crafting Crash Koruması
+  ors-craft-crash:
+    aktif: true
+    anvil-max-isim-uzunlugu: 50
+
+  # NEW-03: Entity Etkileşim Crash Koruması
+  entity-etkilesim-crash:
+    aktif: true
+    max-etkilesim-mesafesi: 6.0
+    saniyede-max-etkilesim: 20
+
+  # NEW-04: Container/Window Crash Koruması
+  container-crash:
+    aktif: true
+
+  # NEW-05: Bundle ve Component Crash Koruması
+  component-crash:
+    aktif: true
+    max-bundle-derinligi: 3
+
   # ═══════════════════════════════════════
   # v2.2 — Gelişmiş Güvenlik Modülleri
   # ═══════════════════════════════════════
@@ -415,6 +457,10 @@ moduller:
     aktif: true
     # Maksimum havai fişek patlama efekti (NBT bazlı)
     max-havai-fiseke-efekt: 15
+    # CR-09: Efekt başına maksimum renk
+    max-renk-per-efekt: 20
+    # CR-09: Maksimum havai fişek gücü
+    max-havai-fisek-gucu: 5
     # Saniyede maksimum partikül paketi
     max-partikul-paketi-saniye: 100
 
@@ -487,13 +533,13 @@ moduller:
       ping-handshake:
         aktif: true
         ping-cache-suresi-dk: 5
-        ping-yok-skor-normal: 5
-        ping-yok-skor-saldiri: 15
+        ping-yok-skor-normal: 0
+        ping-yok-skor-saldiri: 5
         saldiri-carpani: 1.0
 
       kullanici-adi:
         aktif: true
-        entropi-esigi: 3.5
+        entropi-esigi: 4.0
         benzerlik-kontrolu-sadece-saldiri: true
         saldiri-carpani: 1.2
 
@@ -510,20 +556,20 @@ moduller:
 
       yercekimi:
         aktif: true
-        tolerans: 0.03
-        min-veri-sayisi: 5
+        tolerans: 0.08
+        min-veri-sayisi: 8
         saldiri-carpani: 1.0
 
       paket-zamanlama:
         aktif: true
         min-interval-ms: 30
         max-interval-ms: 150
-        min-keepalive-ms: 5
+        min-keepalive-ms: 2
         saldiri-carpani: 1.0
 
       giris-sonrasi-davranis:
         aktif: true
-        analiz-suresi-tick: 600
+        analiz-suresi-tick: 1200
         saldiri-carpani: 1.0
 
     # ===== SALDIRI MODU =====
@@ -532,7 +578,7 @@ moduller:
       tetikleme-esigi: 15
       pencere-suresi-sn: 5
       kapanma-suresi-sn: 60
-      esik-carpani: 0.7
+      esik-carpani: 0.85
       baglanti-kuyrugu: true
       kuyruk-gecikme-ms: 2000
 
@@ -544,6 +590,13 @@ moduller:
       dogrulama-max-skor: 15
       oturum-sayisi-dogrulama: 3
       dosya: "whitelist.json"
+
+    # ===== DOĞRULAMA =====
+    dogrulama:
+      aktif: true
+      sure: 30
+      dogrulama-mesaji: "&cLütfen doğrulamak için hareket edin!"
+      dogrulandi-mesaji: "&aDoğrulama başarılı!"
 
     # ===== KARA LİSTE =====
     kara-liste:

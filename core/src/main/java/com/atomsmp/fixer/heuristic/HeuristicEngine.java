@@ -51,15 +51,19 @@ public class HeuristicEngine {
         if (yawDiff > 180) yawDiff = 360 - yawDiff;
 
         // Check 1: Impossible Rotation Speed (Snapping)
-        // E.g., moving 90 degrees in 10ms is suspicious
+        // FP-11: Eşik yükseltildi (3.5 -> 5.0) ve ardışık spike kontrolü eklendi
         double speed = Math.sqrt(yawDiff * yawDiff + pitchDiff * pitchDiff) / timeDiff; // degrees per ms
         
-        // Threshold: 3.0 degrees/ms is extremely fast (3000 deg/sec)
-        // Legit players usually stay under 1.5 deg/ms even with high sensitivity flick shots
-        if (speed > 3.5) {
-            profile.addSuspicion(10.0);
-            plugin.getLogManager().debug("High rotation speed: " + speed + " (User: " + player.getName() + ")");
-            checkSuspicionLevel(player, profile);
+        if (speed > 5.0) {
+            profile.incrementRotationSpikes();
+            if (profile.getRotationSpikes() >= 3) {
+                profile.addSuspicion(5.0); // 10.0'dan 5.0'a düşürüldü
+                plugin.getLogManager().debug("High rotation speed (Burst): " + speed + " (User: " + player.getName() + ")");
+                checkSuspicionLevel(player, profile);
+                profile.resetRotationSpikes();
+            }
+        } else {
+            profile.resetRotationSpikes();
         }
 
         profile.setLastYaw(yaw);

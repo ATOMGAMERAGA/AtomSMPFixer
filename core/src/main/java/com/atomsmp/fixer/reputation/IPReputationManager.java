@@ -581,11 +581,17 @@ public class IPReputationManager implements IReputationService {
 
         // Katman 3: Yerel proxy listesi (O(1))
         if (proxyListEnabled && proxyIpSet.contains(ip)) {
-            proxyListBlocks.incrementAndGet();
-            totalBlocks.incrementAndGet();
-            recordBlock(ip, playerName, "Proxy Listesi", 100);
-            return CompletableFuture.completedFuture(
-                    ReputationResult.blocked(100, "Proxy Listesi", "Bilinmiyor", "Bilinmiyor"));
+            if (apiCheckEnabled) {
+                // FP-01: Hemen engellemek yerine API ile doğrulamaya yönlendir (cross-validation)
+                // API sorgusuna "proxy listesinde bulundu" sinyalini risk skoru olarak ekleyeceğiz
+                return CompletableFuture.supplyAsync(() -> queryApis(ip, playerName, true));
+            } else {
+                proxyListBlocks.incrementAndGet();
+                totalBlocks.incrementAndGet();
+                recordBlock(ip, playerName, "Proxy Listesi", 100);
+                return CompletableFuture.completedFuture(
+                        ReputationResult.blocked(100, "Proxy Listesi", "Bilinmiyor", "Bilinmiyor"));
+            }
         }
 
         // Katman 4: CIDR subnet kontrolü
@@ -606,7 +612,7 @@ public class IPReputationManager implements IReputationService {
 
         // Katman 6-7: API kontrolü (asenkron)
         if (apiCheckEnabled) {
-            return CompletableFuture.supplyAsync(() -> queryApis(ip, playerName));
+            return CompletableFuture.supplyAsync(() -> queryApis(ip, playerName, false));
         }
 
         return CompletableFuture.completedFuture(ReputationResult.allowed("API Devre Dışı"));
@@ -642,15 +648,42 @@ public class IPReputationManager implements IReputationService {
     //  API Sorgu Katmanı
     // ═══════════════════════════════════════════════════
 
-    private ReputationResult queryApis(@NotNull String ip, @Nullable String playerName) {
+    private ReputationResult queryApis(@NotNull String ip, @Nullable String playerName, boolean wasInProxyList) {
+        int baseRisk = wasInProxyList ? 40 : 0;
+
         // ProxyCheck.io (birincil)
         if (!primaryApiKey.isEmpty()) {
             ReputationResult result = queryProxyCheckApi(ip);
             if (result != null) {
-                // ASN engelleme kontrolü
-                if (!result.isBlocked && asnBlockingEnabled && blockedAsns.contains(result.asn)) {
-                    result = ReputationResult.blocked(result.riskScore, "Engellenen ASN: " + result.asn, result.country, result.asn);
+                // FP-01: Proxy listesi riskini ekle
+                int finalRisk = Math.min(100, result.riskScore + baseRisk);
+                boolean blocked = result.isBlocked || finalRisk >= riskThreshold;
+                String reason = result.type;
+                if (!result.isBlocked && blocked) {
+                    reason = "Proxy Listesi + API Risk (" + finalRisk + ")";
                 }
+                
+                ReputationResult finalResult = new ReputationResult(blocked, finalRisk, reason, result.country, result.asn);
+
+                // ASN engelleme kontrolü
+                if (!finalResult.isBlocked && asnBlockingEnabled && blockedAsns.contains(finalResult.asn)) {
+                    finalResult = ReputationResult.blocked(finalResult.riskScore, "Engellenen ASN: " + finalResult.asn, finalResult.country, finalResult.asn);
+                }
+
+                apiCache.put(ip, finalResult);
+                if (finalResult.isBlocked) {
+                    apiBlocks.incrementAndGet();
+                    totalBlocks.incrementAndGet();
+                    recordBlock(ip, playerName, finalResult.type, finalResult.riskScore);
+                }
+                return finalResult;
+            }
+        }
+
+        // ip-api.com (yedek)
+        if (backupApiEnabled) {
+            ReputationResult result = queryIpApiBackup(ip, wasInProxyList);
+            if (result != null) {
                 apiCache.put(ip, result);
                 if (result.isBlocked) {
                     apiBlocks.incrementAndGet();
@@ -661,18 +694,10 @@ public class IPReputationManager implements IReputationService {
             }
         }
 
-        // ip-api.com (yedek)
-        if (backupApiEnabled) {
-            ReputationResult result = queryIpApiBackup(ip);
-            if (result != null) {
-                apiCache.put(ip, result);
-                if (result.isBlocked) {
-                    apiBlocks.incrementAndGet();
-                    totalBlocks.incrementAndGet();
-                    recordBlock(ip, playerName, result.type, result.riskScore);
-                }
-                return result;
-            }
+        if (wasInProxyList) {
+            // API'lere ulaşılamadı ama proxy listesinde var -> Yumuşak engel (geciktir ama engelleme veya riskli say)
+            // Mevcut mantıkta API kapalıyken direkt engelliyordu, şimdi risk=40 ile izin veriyoruz (eğer threshold > 40 ise)
+            return ReputationResult.allowed("Proxy Listesinde (API Erişilemedi)");
         }
 
         return ReputationResult.allowed("API Sorgusu Başarısız");
@@ -721,7 +746,7 @@ public class IPReputationManager implements IReputationService {
     }
 
     @Nullable
-    private ReputationResult queryIpApiBackup(@NotNull String ip) {
+    private ReputationResult queryIpApiBackup(@NotNull String ip, boolean wasInProxyList) {
         try {
             String apiUrl = "http://ip-api.com/json/" + ip + "?fields=status,proxy,hosting,isp,org,as,countryCode";
 
@@ -747,12 +772,25 @@ public class IPReputationManager implements IReputationService {
                 String asn = json.has("as") ? json.get("as").getAsString() : "Bilinmiyor";
                 String org = json.has("org") ? json.get("org").getAsString() : "Bilinmiyor";
 
-                int risk = 0;
+                int risk = wasInProxyList ? 40 : 0;
                 String type = "Temiz";
-                if (isProxy) { risk = 80; type = "Proxy (ip-api)"; }
-                else if (isHosting) { risk = 70; type = "Hosting/DC (ip-api)"; }
+                
+                if (isProxy) { 
+                    risk = Math.max(risk, 80); 
+                    type = "Proxy (ip-api)"; 
+                } else if (isHosting) { 
+                    // FP-02: Hosting riskini 70'den 45'e düşür
+                    risk = Math.max(risk, 45); 
+                    type = "Hosting/DC (ip-api)"; 
+                }
 
-                boolean blocked = isProxy || (isHosting && risk >= riskThreshold)
+                boolean hostingEngelle = plugin.getConfig().getBoolean("anti-vpn.hosting-engelle", false);
+                
+                // FP-02: isHosting tek başına engelleme sebebi olmamalı (hosting-engelle kapalıysa)
+                boolean blocked = isProxy 
+                        || (isHosting && hostingEngelle && risk >= riskThreshold)
+                        || (isHosting && wasInProxyList && (risk + 20) >= riskThreshold) // Hosting + Proxy Listesi kombinasyonu
+                        || risk >= riskThreshold
                         || blockedCountries.contains(country);
 
                 // ASN engelleme

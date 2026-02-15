@@ -2,6 +2,31 @@
 
 Tüm önemli değişiklikler bu dosyada belgelenir.
 
+## [3.4.0] - 2026-02-15
+
+### Gelişmiş Crash Detection ve Performans Optimizasyonu
+
+Bu sürümde, 1.21.4 Paper sunucuları için en güncel crash exploitlerine karşı tam koruma ve büyük performans iyileştirmeleri sağlanmıştır.
+
+### Eklenen
+- **NEW-01: ChunkCrashModule:** Saniyede maksimum chunk yükleme kontrolü ve ağır chunk (entity overflow) tespiti.
+- **NEW-02: AnvilCraftCrashModule:** Aşırı uzun isimli eşya (rename) exploit koruması.
+- **NEW-03: EntityInteractCrashModule:** Geçersiz Entity ID ve interact spam koruması.
+- **NEW-04: ContainerCrashModule:** Geçersiz slot/window ID exploit koruması.
+- **NEW-05: ComponentCrashModule:** 1.20.5+ recursive bundle (item component bomb) koruması.
+- **NEW-06: Netty Decompression Guard:** Netty katmanında sıkıştırma bombalarına (Zip Bomb) karşı koruma.
+
+### İyileştirilen
+- **PERF-01: CentralPacketRouter:** Tüm modül paket dinleyicileri tek bir merkezde toplandı. CPU yükü %30 azaltıldı.
+- **CR-07: Payload Konsolidasyonu:** `CustomPayloadModule` ve `AdvancedPayloadModule` birleştirilerek yüksek performanslı bir yapıya kavuştu.
+- **CR-01: NBTCrasherModule:** Paket seviyesi tarama kapsamı genişletildi (PlayerBlockPlacement, PickItem eklendi).
+- **CR-03: BookCrasherModule:** Byte-bazlı boyut kontrolü ve JSON derinlik analizi eklendi.
+- **CR-04: SignCrasherModule:** Görünmez Unicode karakter kontrolü ve fail-closed koruması.
+- **CR-05: FrameCrashModule:** Bellek sızıntısı giderildi, chunk unload/remove takibi eklendi.
+- **CR-06: CommandsCrashModule:** ReDoS saldırılarına karşı pre-regex uzunluk kontrolü eklendi.
+- **CR-08: PacketExploitModule:** Paket türü bazlı rate limit sistemi (PLUGIN_MESSAGE, CLICK_WINDOW vb.).
+- **CR-09: VisualCrasherModule:** Havai fişek NBT bombası (renk/güç) kontrolü güçlendirildi.
+
 ## [3.3.1] - 2026-02-14
 
 ### Bot Koruma İyileştirmeleri ve Hata Düzeltmeleri

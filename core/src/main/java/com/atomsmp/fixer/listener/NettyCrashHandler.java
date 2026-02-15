@@ -4,7 +4,6 @@ import com.atomsmp.fixer.AtomSMPFixer;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ import java.util.UUID;
  * malformed paketler bu katmanda engellenir.
  *
  * @author AtomSMP
- * @version 2.0.0
+ * @version 2.1.0
  */
 public class NettyCrashHandler extends ChannelDuplexHandler {
 
@@ -27,6 +26,10 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
     private final AtomSMPFixer plugin;
     private final UUID playerUuid;
     private final String playerName;
+
+    // Exception tracking
+    private long lastExceptionTime = 0;
+    private int exceptionCount = 0;
 
     /**
      * NettyCrashHandler constructor
@@ -49,10 +52,11 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
      */
     @Override
     public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) throws Exception {
-        // Dekode edilmiş paket nesneleri buradan geçer.
-        // NMS paket nesnelerini doğrudan incelemek yerine,
-        // exception handler olarak çalışır — hatalı paketlerin crash yapmasını önler.
-        super.channelRead(ctx, msg);
+        try {
+            super.channelRead(ctx, msg);
+        } catch (Throwable t) {
+            exceptionCaught(ctx, t);
+        }
     }
 
     /**
@@ -65,9 +69,18 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
         String errorMsg = cause.getMessage();
         boolean isCrashAttempt = false;
 
+        // Exception sayacı kontrolü
+        long now = System.currentTimeMillis();
+        if (now - lastExceptionTime < 1000) {
+            exceptionCount++;
+        } else {
+            exceptionCount = 1;
+        }
+        lastExceptionTime = now;
+
         if (errorMsg != null) {
             String lowerMsg = errorMsg.toLowerCase();
-            // Bilinen crash vektörleri
+            // Bilinen crash vektörleri (Genişletilmiş liste + NEW-06)
             isCrashAttempt = lowerMsg.contains("overflow")
                     || lowerMsg.contains("nan")
                     || lowerMsg.contains("infinity")
@@ -75,19 +88,39 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
                     || lowerMsg.contains("negative length")
                     || lowerMsg.contains("varint too big")
                     || lowerMsg.contains("string too long")
-                    || lowerMsg.contains("packet too large");
+                    || lowerMsg.contains("packet too large")
+                    || lowerMsg.contains("bad packet")
+                    || lowerMsg.contains("received string length")
+                    || lowerMsg.contains("tried to read")
+                    || lowerMsg.contains("decompress") // NEW-06: Compression Bomb
+                    || lowerMsg.contains("inflation")   // NEW-06: Zlib inflation error
+                    || lowerMsg.contains("encryption")
+                    || lowerMsg.contains("recursion")
+                    || lowerMsg.contains("stack overflow")
+                    || lowerMsg.contains("buffer")
+                    || lowerMsg.contains("slice")
+                    || lowerMsg.contains("index");
+        }
+        
+        // StackOverflowError kontrolü (tür bazlı)
+        if (cause instanceof StackOverflowError) {
+            isCrashAttempt = true;
         }
 
         // DecoderException ise bilinen crash vektörlerini kontrol et
-        // NOT: Her DecoderException crash girişimi DEĞİLDİR — kötü bağlantı da buna yol açabilir
         if (cause.getClass().getSimpleName().contains("DecoderException") && errorMsg != null) {
             String lowerCauseMsg = errorMsg.toLowerCase();
-            // Sadece bilinen crash vektörleri ile eşleşirse işaretle
             if (lowerCauseMsg.contains("overflow") || lowerCauseMsg.contains("varint")
                     || lowerCauseMsg.contains("too big") || lowerCauseMsg.contains("too large")
-                    || lowerCauseMsg.contains("negative length")) {
+                    || lowerCauseMsg.contains("negative length") || lowerCauseMsg.contains("bad packet id")) {
                 isCrashAttempt = true;
             }
+        }
+
+        // Çok sık exception fırlatan oyuncuyu at (3+ exception / saniye)
+        if (exceptionCount > 3) {
+            isCrashAttempt = true;
+            plugin.getLogManager().logExploit(playerName, "netty-flood", "Çok fazla paket hatası (" + exceptionCount + "/sn)");
         }
 
         if (isCrashAttempt) {
@@ -106,7 +139,11 @@ public class NettyCrashHandler extends ChannelDuplexHandler {
 
         // Bilinmeyen hatalar için — pipeline'daki sonraki handler'a ilet
         // Bağlantıyı kapatma, normal ağ hataları olabilir
-        ctx.fireExceptionCaught(cause);
+        try {
+            ctx.fireExceptionCaught(cause);
+        } catch (Exception e) {
+            // Logla ama çökme
+        }
     }
 
     /**

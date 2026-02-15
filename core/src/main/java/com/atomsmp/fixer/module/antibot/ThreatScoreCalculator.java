@@ -29,6 +29,13 @@ public class ThreatScoreCalculator {
             return new ThreatResult(0, ActionType.ALLOW, Collections.emptyMap());
         }
 
+        // FP-08: Doğrulanmış oyuncu cache'indeki oyuncular için kontrolü gevşet veya atla
+        boolean isVerified = false;
+        if (module.getPlugin().getVerifiedPlayerCache() != null && 
+            profile.getUsername() != null && profile.getIpAddress() != null) {
+            isVerified = module.getPlugin().getVerifiedPlayerCache().isVerified(profile.getUsername(), profile.getIpAddress());
+        }
+
         int totalScore = 0;
         Map<String, Integer> breakdown = new LinkedHashMap<>();
 
@@ -36,7 +43,9 @@ public class ThreatScoreCalculator {
             if (!check.isEnabled()) continue;
 
             int score = check.calculateThreatScore(profile);
-            if (module.getAttackTracker().isUnderAttack()) {
+            
+            // FP-08: Doğrulanmış oyuncular için saldırı modu çarpanını atla
+            if (module.getAttackTracker().isUnderAttack() && !isVerified) {
                 score = (int) (score * check.getAttackModeMultiplier());
             }
 
@@ -48,8 +57,10 @@ public class ThreatScoreCalculator {
 
         // Action thresholds
         ActionType action;
-        double multiplier = module.getAttackTracker().isUnderAttack() ? 
-                module.getConfigDouble("saldiri-modu.esik-carpani", 0.7) : 1.0;
+        
+        // FP-08: Doğrulanmış oyuncular için saldırı modu çarpanını uygulama (multiplier = 1.0)
+        double multiplier = (module.getAttackTracker().isUnderAttack() && !isVerified) ? 
+                module.getConfigDouble("saldiri-modu.esik-carpani", 0.85) : 1.0; // 0.7'den 0.85'e çıkarıldı
 
         int allowThreshold = (int) (module.getConfigInt("skor-esikleri.izin-ver", 30) * multiplier);
         int delayThreshold = (int) (module.getConfigInt("skor-esikleri.geciktir", 60) * multiplier);

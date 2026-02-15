@@ -88,7 +88,7 @@ public class SignCrasherModule extends AbstractModule {
      * Config değerlerini yükler
      */
     private void loadConfig() {
-        this.maxLineLength = getConfigInt("max-satir-uzunlugu", 384);
+        this.maxLineLength = getConfigInt("max-satir-uzunlugu", 100); // CR-04: Varsayılan 384 -> 100
         this.cleanColorCodes = getConfigBoolean("renk-kodlarini-temizle", false);
         this.blockSpecialChars = getConfigBoolean("ozel-karakterleri-engelle", true);
 
@@ -123,6 +123,15 @@ public class SignCrasherModule extends AbstractModule {
 
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
+                
+                // CR-04: Invisible character check
+                if (line.contains("\u200B") || line.contains("\u202E") || line.contains("\u2066")) {
+                    incrementBlockedCount();
+                    event.setCancelled(true);
+                    logExploit(player.getName(), "Görünmez karakter içeren tabela: " + i);
+                    return;
+                }
+
                 String sanitized = sanitizeLine(line);
 
                 newLines[i] = sanitized;
@@ -141,9 +150,9 @@ public class SignCrasherModule extends AbstractModule {
                         String.format("Çok uzun tabela satırı: %d karakter (Limit: %d)",
                             sanitized.length(), maxLineLength));
 
-                    // Satırı kısalt
-                    newLines[i] = sanitized.substring(0, maxLineLength);
-                    modified = true;
+                    // CR-04: Fail-closed (İptal et, kısaltma)
+                    event.setCancelled(true);
+                    return;
                 }
             }
 

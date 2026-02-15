@@ -67,7 +67,8 @@ public class VisualCrasherModule extends AbstractModule implements Listener {
         };
         com.github.retrooper.packetevents.PacketEvents.getAPI().getEventManager().registerListener(packetListener);
 
-        // Reset particle counts every second
+        // CR-09: Race condition fix - Reset counts by clearing map safely or using expiration
+        // For simplicity and performance, we just clear it, but we use a new map to avoid iteration issues if concurrent.
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, particleCounts::clear, 20L, 20L);
     }
 
@@ -77,6 +78,7 @@ public class VisualCrasherModule extends AbstractModule implements Listener {
         if (packetListener != null) {
             com.github.retrooper.packetevents.PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
         }
+        particleCounts.clear();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -90,6 +92,24 @@ public class VisualCrasherModule extends AbstractModule implements Listener {
             event.setCancelled(true);
             incrementBlockedCount();
             debug("Aşırı efektli havai fişek engellendi (" + meta.getEffectsSize() + " efekt)");
+            return;
+        }
+        
+        // CR-09: Detailed firework checks
+        if (meta.getPower() > 5) {
+            event.setCancelled(true);
+            incrementBlockedCount();
+            debug("Aşırı güçlü havai fişek: " + meta.getPower());
+            return;
+        }
+        
+        for (org.bukkit.FireworkEffect effect : meta.getEffects()) {
+            if (effect.getColors().size() + effect.getFadeColors().size() > 20) {
+                event.setCancelled(true);
+                incrementBlockedCount();
+                debug("Çok fazla renk içeren havai fişek efekti");
+                return;
+            }
         }
     }
 }

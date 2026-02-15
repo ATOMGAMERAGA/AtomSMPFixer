@@ -136,8 +136,10 @@ public class BookCrasherModule extends AbstractModule {
             // 3. İçerik ve Boyut Kontrolü
             int currentTotalSize = 0;
             for (String page : pages) {
-                if (page.length() > maxPageSize) {
-                    cancelBook(event, player, "Çok uzun sayfa: " + page.length());
+                // CR-03: Byte-bazlı boyut kontrolü (Unicode exploit önleme)
+                int byteSize = page.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+                if (byteSize > maxPageSize) {
+                    cancelBook(event, player, "Çok uzun sayfa (Byte): " + byteSize);
                     return;
                 }
                 
@@ -145,8 +147,33 @@ public class BookCrasherModule extends AbstractModule {
                     cancelBook(event, player, "Zararlı sayfa içeriği tespit edildi!");
                     return;
                 }
+
+                // CR-03: JSON Derinlik ve Yapı Kontrolü
+                if (page.trim().startsWith("{") || page.trim().startsWith("[")) {
+                     // Basit JSON derinlik kontrolü (Regex ile yaklaşık)
+                     int depth = 0;
+                     int maxDepth = 0;
+                     for (char c : page.toCharArray()) {
+                         if (c == '{' || c == '[') {
+                             depth++;
+                             maxDepth = Math.max(maxDepth, depth);
+                         } else if (c == '}' || c == ']') {
+                             depth--;
+                         }
+                     }
+                     if (maxDepth > 5) { // Config'den alınabilir: json-derinlik-limiti
+                         cancelBook(event, player, "Çok derin JSON yapısı: " + maxDepth);
+                         return;
+                     }
+                     
+                     // Tehlikeli JSON anahtarları
+                     if (page.contains("\"translate\"") || page.contains("\"nbt\"") || page.contains("\"selector\"")) {
+                          cancelBook(event, player, "Yasaklı JSON komponenti");
+                          return;
+                     }
+                }
                 
-                currentTotalSize += page.length() * 2;
+                currentTotalSize += byteSize;
             }
 
             if (currentTotalSize > maxTotalBookSize) {

@@ -169,6 +169,15 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
 
         debug(player.getName() + " komutu: " + command);
 
+        // CR-06: Pre-regex length check to prevent ReDoS on massive strings
+        if (command.length() > 500) {
+            incrementBlockedCount();
+            logExploit(player.getName(), String.format("Çok uzun komut: %d karakter (Limit: 500)", command.length()));
+            event.setCancelled(true);
+            player.sendMessage(plugin.getMessageManager().getMessage("komut-cok-uzun"));
+            return;
+        }
+
         // Her pattern'i kontrol et
         for (Pattern pattern : blockedPatterns) {
             if (pattern.matcher(command).matches()) {
@@ -191,17 +200,8 @@ public class CommandsCrashModule extends AbstractModule implements Listener {
         }
 
         // Uzunluk kontrolü (ek güvenlik) — Minecraft vanilya limiti 32500 karakter
-        if (command.length() > 10000) {
-            incrementBlockedCount();
-
-            logExploit(player.getName(),
-                String.format("Çok uzun komut: %d karakter (Limit: 10000)", command.length()));
-
-            event.setCancelled(true);
-            player.sendMessage(plugin.getMessageManager().getMessage("komut-cok-uzun"));
-
-            debug(player.getName() + " için komut engellendi (çok uzun)");
-        }
+        // Not: Yukarıdaki 500 sınırı zaten bunu kapsıyor, ama eski config uyumluluğu için tutabiliriz veya kaldırabiliriz.
+        // Kod temizliği için kaldırıyoruz çünkü yukarıdaki check daha katı.
     }
 
     /**

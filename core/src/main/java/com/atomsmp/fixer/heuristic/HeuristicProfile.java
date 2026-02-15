@@ -25,6 +25,7 @@ public class HeuristicProfile {
     // Suspicion System
     private double suspicionLevel; // 0.0 to 100.0
     private final AtomicInteger violationCount;
+    private int rotationSpikes = 0;
 
     public HeuristicProfile(UUID uuid) {
         this.uuid = uuid;
@@ -32,6 +33,18 @@ public class HeuristicProfile {
         this.lastRotationTime = System.currentTimeMillis();
         this.violationCount = new AtomicInteger(0);
         this.suspicionLevel = 0.0;
+    }
+
+    public void incrementRotationSpikes() {
+        this.rotationSpikes++;
+    }
+
+    public void resetRotationSpikes() {
+        this.rotationSpikes = 0;
+    }
+
+    public int getRotationSpikes() {
+        return rotationSpikes;
     }
 
     public UUID getUuid() {

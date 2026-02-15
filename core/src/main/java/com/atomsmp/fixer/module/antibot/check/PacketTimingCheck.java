@@ -25,13 +25,13 @@ public class PacketTimingCheck extends AbstractCheck {
 
         // 2. Variance
         double variance = profile.getPositionPacketVariance();
-        if (variance >= 0 && variance < 1.0 && profile.getPositionPacketCount() > 20) {
-            score += 15;
+        if (variance >= 0 && variance < 0.1 && profile.getPositionPacketCount() > 50) {
+            score += 10; // 15'ten 10'a düşürüldü, eşikler sıkılaştırıldı (1.0 -> 0.1, 20 -> 50)
         }
 
         // 3. Keep-alive response
         long keepAliveMs = profile.getAverageKeepAliveResponseMs();
-        int minKeepAlive = module.getConfigInt("kontroller.paket-zamanlama.min-keepalive-ms", 5);
+        int minKeepAlive = module.getConfigInt("kontroller.paket-zamanlama.min-keepalive-ms", 2); // 5'ten 2'ye düşürüldü
         if (keepAliveMs > 0 && keepAliveMs < minKeepAlive) {
             score += 20;
         }

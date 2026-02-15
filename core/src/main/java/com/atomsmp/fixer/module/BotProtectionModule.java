@@ -281,24 +281,32 @@ public class BotProtectionModule extends AbstractModule implements Listener {
 
     private void checkSimilarNames(AsyncPlayerPreLoginEvent event) {
         String name = event.getName();
-        int threshold = getConfigInt("benzer-isim-kontrolu.karakter-farki", 3);
-        int maxSimilar = getConfigInt("benzer-isim-kontrolu.max-benzer-sayisi", 10);
+        // FP-09: Daha katı eşikler
+        int threshold = getConfigInt("benzer-isim-kontrolu.karakter-farki", 2); // 3'ten 2'ye düşürüldü
+        int maxSimilar = getConfigInt("benzer-isim-kontrolu.max-benzer-sayisi", 15); // 10'dan 15'e çıkarıldı
         
         List<String> similarPlayers = new ArrayList<>();
         for (String pName : onlinePlayerNames) {
+            // FP-09: Sadece Levenshtein'a güvenme. Prefix-only kontrolü ekle.
             if (BotUtils.getLevenshteinDistance(name, pName) <= threshold) {
-                similarPlayers.add(pName);
+                // Sadece ismin son kısmı (rakamlar) farklı ise benzer say, prefix benzer olmalı
+                String prefix1 = name.replaceAll("\\d+$", "");
+                String prefix2 = pName.replaceAll("\\d+$", "");
+                
+                if (prefix1.equalsIgnoreCase(prefix2) && prefix1.length() >= 4) {
+                    similarPlayers.add(pName);
+                }
             }
         }
 
         // Add current player to count (checking against others)
         if (similarPlayers.size() >= maxSimilar - 1) {
              event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, 
-                ChatColor.RED + "Bot saldırısı şüphesi (Benzer isimler).");
+                ChatColor.RED + "Bot saldırısı şüphesi (Benzer isim kalıbı).");
             
             incrementBlockedCount();
             plugin.getLogManager().logBot(name, event.getAddress().getHostAddress(), 
-                    "Benzer isim saldırısı tespit edildi. Benzerler: " + similarPlayers.size());
+                    "Benzer isim saldırısı (Pattern match). Benzerler: " + similarPlayers.size());
 
             // Ban others on main thread
             new BukkitRunnable() {
@@ -334,7 +342,6 @@ public class BotProtectionModule extends AbstractModule implements Listener {
             // Katman 3: Yerçekimi Testi (Gravity Check)
             if (getConfigBoolean("atom-shield.davranissal.yercekimi-testi", false)) {
                 // Oyuncuyu havaya ışınla (sadece doğrulanmamışlar için)
-                // Orijinal yerini kaydetmeyelim, spawn'a düşsünler
                 player.teleport(player.getLocation().add(0, 5, 0));
                 debug("Yerçekimi testi başlatıldı: " + player.getName());
             }
@@ -343,13 +350,18 @@ public class BotProtectionModule extends AbstractModule implements Listener {
                 getConfigString("dogrulama.dogrulama-mesaji", "&cLütfen doğrulamak için hareket edin!")));
 
             // Timeout scheduler
-            int timeout = getConfigInt("dogrulama.sure", 15);
+            int timeout = getConfigInt("dogrulama.sure", 30); // 15'ten 30'a çıkarıldı
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     if (player.isOnline() && pendingVerification.contains(player.getUniqueId())) {
-                        player.kickPlayer(ChatColor.RED + "Doğrulama zaman aşımı.");
                         handleOffense(player.getName(), player.getAddress().getAddress().getHostAddress());
+                        
+                        // FP-10: 3-strike sistemi (handleOffense zaten banlıyor 2. veya 3. ihlalde)
+                        int offenses = ipOffenseCount.getOrDefault(player.getAddress().getAddress().getHostAddress(), 0);
+                        if (offenses < 3) {
+                            player.kickPlayer(ChatColor.RED + "Doğrulama zaman aşımı. (" + offenses + "/3)");
+                        }
                     }
                 }
             }.runTaskLater(plugin, timeout * 20L);
@@ -378,6 +390,9 @@ public class BotProtectionModule extends AbstractModule implements Listener {
                 
                 // Verified!
                 pendingVerification.remove(player.getUniqueId());
+                // Reset offenses on successful verification
+                ipOffenseCount.remove(player.getAddress().getAddress().getHostAddress());
+                
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&', 
                     getConfigString("dogrulama.dogrulandi-mesaji", "&aDoğrulama başarılı!")));
             }
@@ -394,11 +409,11 @@ public class BotProtectionModule extends AbstractModule implements Listener {
         int offenses = ipOffenseCount.getOrDefault(ip, 0) + 1;
         ipOffenseCount.put(ip, offenses);
 
-        if (offenses == 1) {
-            // First offense is just the kick (handled by timeout usually)
-            plugin.getLogManager().logBot(playerName, ip, "Bot şüphesi: İlk ihlal");
-        } else if (offenses >= 2) {
-            // Second offense -> BAN
+        // FP-10: 3-strike sistemi (Kick, Kick, Ban)
+        if (offenses <= 2) {
+            plugin.getLogManager().logBot(playerName, ip, "Doğrulama ihlali: " + offenses + "/3");
+        } else {
+            // Third offense -> BAN
             performBan(playerName, ip);
             ipOffenseCount.remove(ip); // Reset after ban
         }
