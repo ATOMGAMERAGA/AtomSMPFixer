@@ -67,8 +67,37 @@ public class ConfigManager {
 
         if (!configVersion.equals(currentVersion)) {
             plugin.getLogger().info("Config versiyonu eski (" + configVersion + "), güncelleniyor: " + currentVersion);
+            
+            // Migrate logic
+            migrate(configVersion, currentVersion);
+            
             config.set("config-version", currentVersion);
             saveConfig();
+        }
+    }
+
+    private void migrate(String from, String to) {
+        // v3.x'ten v4.0.0'a geçiş iyileştirmeleri
+        if (from.startsWith("3.")) {
+            // Örnek: v4'te yeni eklenen bir ayarı ekle
+            if (!config.contains("web-panel.max-payload-size")) {
+                config.set("web-panel.max-payload-size", 1024 * 512); // 512KB default
+            }
+            
+            // Eski bir anahtarı taşıma veya silme (gerekiyorsa)
+            if (config.contains("moduller.eski-modul")) {
+                Object val = config.get("moduller.eski-modul");
+                config.set("moduller.yeni-modul", val);
+                config.set("moduller.eski-modul", null);
+            }
+        }
+        
+        // Backup oluştur
+        File backup = new File(plugin.getDataFolder(), "config.yml.bak-" + from);
+        try {
+            config.save(backup);
+        } catch (IOException e) {
+            plugin.getLogger().warning("Konfigürasyon yedeği oluşturulamadı.");
         }
     }
 

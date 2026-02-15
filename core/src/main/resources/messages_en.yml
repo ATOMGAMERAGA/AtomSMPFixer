@@ -117,6 +117,12 @@ istatistik:
   baglanti-hizi: "<yellow>  Connection rate: {hiz}/s"
   dogrulanmis-ip: "<gray>  Verified IPs: {sayi}"
 
+health:
+  baslik: "<gradient:#00d4ff:#00ff88><bold>═══ System Health Report ═══</bold></gradient>"
+  aciklama: "Analyze server and system status"
+  kullanim: "/atomfix health"
+  alt-cizgi: "<gradient:#00d4ff:#00ff88><bold>════════════════════════════</bold></gradient>"
+
 antivpn:
   baslik: "<gradient:#ff6b6b:#ffa500><bold>═══ Anti-VPN Commands ═══</bold></gradient>"
   stats-baslik: "<gradient:#ff6b6b:#ffa500><bold>═══ Anti-VPN Detailed Statistics ═══</bold></gradient>"

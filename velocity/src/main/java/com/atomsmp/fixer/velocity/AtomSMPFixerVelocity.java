@@ -14,7 +14,7 @@ import java.nio.file.Path;
 @Plugin(
         id = "atomsmpfixer-velocity",
         name = "AtomSMPFixer Velocity",
-        version = "3.4.1",
+        version = "4.0.0",
         description = "Velocity proxy module for AtomSMPFixer",
         authors = {"AtomSMP"}
 )

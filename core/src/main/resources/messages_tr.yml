@@ -117,6 +117,12 @@ istatistik:
   baglanti-hizi: "<yellow>  Bağlantı hızı: {hiz}/sn"
   dogrulanmis-ip: "<gray>  Doğrulanmış IP: {sayi}"
 
+health:
+  baslik: "<gradient:#00d4ff:#00ff88><bold>═══ Sistem Sağlık Raporu ═══</bold></gradient>"
+  aciklama: "Sunucu ve sistem durumunu analiz et"
+  kullanim: "/atomfix health"
+  alt-cizgi: "<gradient:#00d4ff:#00ff88><bold>════════════════════════════</bold></gradient>"
+
 antivpn:
   baslik: "<gradient:#ff6b6b:#ffa500><bold>═══ Anti-VPN Komutları ═══</bold></gradient>"
   stats-baslik: "<gradient:#ff6b6b:#ffa500><bold>═══ Anti-VPN Detaylı İstatistikler ═══</bold></gradient>"

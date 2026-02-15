@@ -2,6 +2,24 @@
 
 Tüm önemli değişiklikler bu dosyada belgelenir.
 
+## [4.0.0] - 2026-02-15
+
+### Eklenen
+- **i18n Sistemi:** Komut sistemi tamamen `messages.yml` üzerinden çalışacak şekilde yeniden yazıldı. 90+ hardcoded mesaj dil dosyalarına taşındı.
+- **Güvenlik:** WebPanel için rate-limiting ve payload boyutu kontrolleri güçlendirildi.
+- **Loglama:** Tüm `printStackTrace` çağrıları LogManager üzerinden yapılandırıldı.
+- **Versiyon:** Proje genelinde versiyon 4.0.0'a yükseltildi.
+
+### Değiştirildi
+- `AtomFixCommand` sınıfı temizlendi ve modüler hale getirildi.
+- `config-version` 4.0.0 olarak güncellendi.
+- Velocity modülü versiyon uyumsuzluğu giderildi.
+
+### Düzeltildi
+- Banner kutusu hizalama sorunu düzeltildi.
+- AntiBot durum mesajındaki "N/A" hatası giderildi (şimdilik "Bilinmiyor" veya 0 olarak).
+- Kod içerisindeki eski versiyon yorumları temizlendi.
+
 ## [3.4.0] - 2026-02-15
 
 ### Gelişmiş Crash Detection ve Performans Optimizasyonu
