@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * Geçersiz koordinatları ve aşırı hızlı hareketleri denetler.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class MovementSecurityModule extends AbstractModule implements Listener {
 

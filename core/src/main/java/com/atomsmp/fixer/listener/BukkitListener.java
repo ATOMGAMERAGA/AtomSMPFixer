@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  * Oyuncu join/quit ve diğer Bukkit eventlerini işler
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class BukkitListener implements Listener {
 

@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Aşırı chunk yüklemesi ve entity overflow exploit'lerini önler.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class ChunkCrashModule extends AbstractModule implements Listener {
 

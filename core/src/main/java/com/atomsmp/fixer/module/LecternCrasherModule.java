@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  * - Crash exploit önleme
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class LecternCrasherModule extends AbstractModule implements Listener {
 

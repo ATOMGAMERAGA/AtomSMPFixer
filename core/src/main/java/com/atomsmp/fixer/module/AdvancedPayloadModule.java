@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 4. Brand analizi ve crash client imzası tespiti
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class AdvancedPayloadModule extends AbstractModule {
 

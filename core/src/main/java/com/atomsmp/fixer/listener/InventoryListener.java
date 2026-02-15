@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  * Envanter duplikasyon ve exploit'lerini önler
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class InventoryListener implements Listener {
 

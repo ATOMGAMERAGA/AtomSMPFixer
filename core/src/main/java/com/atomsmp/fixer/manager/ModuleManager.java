@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Tüm exploit düzeltme modüllerini yönetir
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class ModuleManager implements IModuleManager {
 

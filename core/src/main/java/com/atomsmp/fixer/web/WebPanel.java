@@ -39,6 +39,9 @@ public class WebPanel {
     private final ConcurrentLinkedDeque<EventRecord> recentEvents = new ConcurrentLinkedDeque<>();
     private final int maxEvents;
 
+    // Rate Limiting
+    private final java.util.Map<String, RateLimitTracker> rateLimits = new java.util.concurrent.ConcurrentHashMap<>();
+
     public WebPanel(AtomSMPFixer plugin) {
         this.plugin = plugin;
         this.port = plugin.getConfig().getInt("web-panel.port", 8080);
@@ -47,6 +50,9 @@ public class WebPanel {
         this.authUser = plugin.getConfig().getString("web-panel.kimlik-dogrulama.kullanici-adi", "admin");
         this.authPass = plugin.getConfig().getString("web-panel.kimlik-dogrulama.sifre", "atomsmp2024");
         this.maxEvents = plugin.getConfig().getInt("web-panel.max-olay-sayisi", 100);
+        
+        // Cleanup task for rate limits
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> rateLimits.clear(), 1, 1, java.util.concurrent.TimeUnit.HOURS);
     }
 
     public void start() {
@@ -54,18 +60,77 @@ public class WebPanel {
 
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
-            server.createContext("/", new DashboardHandler());
-            server.createContext("/modules", new ModulesPageHandler());
-            server.createContext("/api/stats", new StatsHandler());
-            server.createContext("/api/modules", new ModulesApiHandler());
-            server.createContext("/api/modules/toggle", new ModuleToggleHandler());
-            server.createContext("/api/events", new EventsApiHandler());
-            server.createContext("/api/attacks", new AttacksApiHandler());
+            server.createContext("/", new ProtectedHandler(new DashboardHandler()));
+            server.createContext("/modules", new ProtectedHandler(new ModulesPageHandler()));
+            server.createContext("/api/stats", new ProtectedHandler(new StatsHandler()));
+            server.createContext("/api/modules", new ProtectedHandler(new ModulesApiHandler()));
+            server.createContext("/api/modules/toggle", new ProtectedHandler(new ModuleToggleHandler()));
+            server.createContext("/api/events", new ProtectedHandler(new EventsApiHandler()));
+            server.createContext("/api/attacks", new ProtectedHandler(new AttacksApiHandler()));
             server.setExecutor(Executors.newFixedThreadPool(4));
             server.start();
             plugin.getLogger().info("Web Panel started on port " + port);
         } catch (IOException e) {
             plugin.getLogger().severe("Failed to start Web Panel: " + e.getMessage());
+        }
+    }
+
+    // ═══════════════════════════════════════
+    // Security Wrappers
+    // ═══════════════════════════════════════
+
+    private class ProtectedHandler implements HttpHandler {
+        private final HttpHandler delegate;
+
+        public ProtectedHandler(HttpHandler delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // 1. Rate Limiting
+            if (!checkRateLimit(exchange)) {
+                exchange.sendResponseHeaders(429, -1);
+                exchange.close();
+                return;
+            }
+
+            // 2. Authentication
+            if (!checkAuth(exchange)) {
+                return;
+            }
+
+            delegate.handle(exchange);
+        }
+    }
+
+    private boolean checkRateLimit(HttpExchange exchange) {
+        String ip = exchange.getRemoteAddress().getAddress().getHostAddress();
+        RateLimitTracker tracker = rateLimits.computeIfAbsent(ip, k -> new RateLimitTracker());
+        return tracker.tryAcquire();
+    }
+
+    private static class RateLimitTracker {
+        private final java.util.concurrent.atomic.AtomicInteger requests = new java.util.concurrent.atomic.AtomicInteger(0);
+        private volatile long lastReset = System.currentTimeMillis();
+
+        public boolean tryAcquire() {
+            long now = System.currentTimeMillis();
+            if (now - lastReset > 1000) { // 1 second window
+                lastReset = now;
+                requests.set(0);
+            }
+            return requests.incrementAndGet() <= 20; // 20 req/sec limit
+        }
+    }
+
+    private String readBodyWithLimit(HttpExchange exchange, int limit) throws IOException {
+        try (java.io.InputStream is = exchange.getRequestBody()) {
+            byte[] data = is.readNBytes(limit);
+            if (is.read() != -1) {
+                throw new IOException("Request body too large");
+            }
+            return new String(data, StandardCharsets.UTF_8);
         }
     }
 
@@ -155,7 +220,7 @@ public class WebPanel {
     private class DashboardHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             long blockedTotal = plugin.getModuleManager().getTotalBlockedCount();
             int onlineCount = Bukkit.getOnlinePlayers().size();
@@ -233,7 +298,7 @@ public class WebPanel {
     private class ModulesPageHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             StringBuilder moduleCards = new StringBuilder();
             for (AbstractModule module : plugin.getModuleManager().getAllModules()) {
@@ -288,7 +353,7 @@ public class WebPanel {
     private class StatsHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             long blockedTotal = plugin.getModuleManager().getTotalBlockedCount();
             int onlineCount = Bukkit.getOnlinePlayers().size();
@@ -314,7 +379,7 @@ public class WebPanel {
     private class ModulesApiHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             StringBuilder json = new StringBuilder("[");
             boolean first = true;
@@ -335,14 +400,21 @@ public class WebPanel {
     private class ModuleToggleHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 sendResponse(exchange, 405, "application/json", "{\"error\":\"Method not allowed\"}");
                 return;
             }
 
-            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            String body;
+            try {
+                body = readBodyWithLimit(exchange, 1024); // 1KB limit
+            } catch (IOException e) {
+                sendResponse(exchange, 413, "application/json", "{\"error\":\"Body too large\"}");
+                return;
+            }
+            
             String moduleName = null;
 
             // Parse form data: module=xxx
@@ -367,7 +439,7 @@ public class WebPanel {
     private class EventsApiHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             List<EventRecord> events = getRecentEvents();
             StringBuilder json = new StringBuilder("[");
@@ -389,7 +461,7 @@ public class WebPanel {
     private class AttacksApiHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkAuth(exchange)) return;
+            // Auth checked by ProtectedHandler
 
             StringBuilder json = new StringBuilder("[");
             if (plugin.getStatisticsManager() != null) {

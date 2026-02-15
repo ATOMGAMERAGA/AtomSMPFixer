@@ -18,7 +18,7 @@ import java.util.Base64;
  * Data Component: PROFILE
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public final class SkullCheck {
 

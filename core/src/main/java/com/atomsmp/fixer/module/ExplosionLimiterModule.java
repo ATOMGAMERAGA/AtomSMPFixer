@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Kristal patlamalarını görmezden gelir.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class ExplosionLimiterModule extends AbstractModule implements Listener {
 

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Havai fişek ve partikül exploit'lerini önler.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class VisualCrasherModule extends AbstractModule implements Listener {
 

@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Piston hareketlerini saniye başına sınırlar ve sıfır-tick makinelerini engeller.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class PistonLimiterModule extends AbstractModule implements Listener {
 

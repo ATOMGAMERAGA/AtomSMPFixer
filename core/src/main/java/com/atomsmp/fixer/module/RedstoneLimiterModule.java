@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - Her saniye sayaçlar sıfırlanır
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class RedstoneLimiterModule extends AbstractModule implements Listener {
 

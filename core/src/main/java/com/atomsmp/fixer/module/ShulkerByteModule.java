@@ -27,7 +27,7 @@ import java.util.Map;
  * - InventoryCloseEvent: Shulker envanteri kapatılırken boyut kontrolü (smuggling önleme)
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class ShulkerByteModule extends AbstractModule implements Listener {
 

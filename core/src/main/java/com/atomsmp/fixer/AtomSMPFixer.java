@@ -30,12 +30,13 @@ import com.atomsmp.fixer.web.WebPanel;
  * Gelişmiş exploit düzeltme ve sunucu koruma sistemi
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public final class AtomSMPFixer extends JavaPlugin {
 
     // Singleton instance
     private static AtomSMPFixer instance;
+
 
     // Manager sınıfları
     private ConfigManager configManager;
@@ -460,7 +461,7 @@ public final class AtomSMPFixer extends JavaPlugin {
         getLogger().info("║   /_\\| |_ ___ _ __/ __|  \\/  | _ \\     ║");
         getLogger().info("║  / _ \\ _/ _ \\ '  \\__ \\ |\\/| |  _/     ║");
         getLogger().info("║ /_/ \\_\\__\\___/_|_|___|_|  |_|_|       ║");
-        getLogger().info("║          Exploit Fixer v3.4.1           ║");
+        getLogger().info("║          Exploit Fixer v4.0.0           ║");
         getLogger().info("╚════════════════════════════════════════╝");
     }
 

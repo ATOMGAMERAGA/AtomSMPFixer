@@ -15,7 +15,7 @@ import java.util.Map;
  * Data Component: ENCHANTMENTS, STORED_ENCHANTMENTS
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public final class EnchantmentCheck {
 

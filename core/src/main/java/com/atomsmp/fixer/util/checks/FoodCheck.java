@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * - Aşırı efekt sayısı/süresi → bellek sorunları
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public final class FoodCheck {
 

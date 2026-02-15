@@ -12,7 +12,7 @@ import java.util.Map;
  * Uses PacketEvents NBT API to scan the actual NBT tree without recursion to avoid StackOverflowError.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class RecursiveNBTScanner {
 

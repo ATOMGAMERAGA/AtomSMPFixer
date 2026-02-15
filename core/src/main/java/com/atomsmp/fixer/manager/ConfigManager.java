@@ -20,7 +20,7 @@ import java.util.logging.Level;
  * Thread-safe ve performanslı config yönetimi sağlar
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class ConfigManager {
 

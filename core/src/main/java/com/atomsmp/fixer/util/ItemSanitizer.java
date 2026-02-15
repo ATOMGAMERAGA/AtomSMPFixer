@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
  *        değişiklik varsa logla → düzeltilmiş item'ı event'e geri yaz
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public final class ItemSanitizer {
 

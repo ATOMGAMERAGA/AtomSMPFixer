@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * Unicode crash karakterlerini ve tab-complete spamini engeller.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class AdvancedChatModule extends AbstractModule implements Listener {
 

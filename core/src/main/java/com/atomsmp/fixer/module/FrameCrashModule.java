@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * - Memory efficient tracking
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class FrameCrashModule extends AbstractModule implements Listener {
 

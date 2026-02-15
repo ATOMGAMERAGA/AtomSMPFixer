@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Çok fazla düşen bloğun sunucuyu yormasını önler.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class FallingBlockLimiterModule extends AbstractModule implements Listener {
 

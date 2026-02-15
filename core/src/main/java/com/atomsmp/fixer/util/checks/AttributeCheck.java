@@ -19,7 +19,7 @@ import java.util.Map;
  * Data Component: ATTRIBUTE_MODIFIERS
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public final class AttributeCheck {
 

@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Lag yapan chunk'lardaki işlemleri (fizik, entity) geçici olarak dondurur.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class SmartLagModule extends AbstractModule implements Listener {
 

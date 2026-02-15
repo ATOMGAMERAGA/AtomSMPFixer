@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Ortak modül fonksiyonlarını ve alanlarını sağlar
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public abstract class AbstractModule implements IModule {
 

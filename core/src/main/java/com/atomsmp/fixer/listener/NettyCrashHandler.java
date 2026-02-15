@@ -16,7 +16,7 @@ import java.util.UUID;
  * malformed paketler bu katmanda engellenir.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class NettyCrashHandler extends ChannelDuplexHandler {
 

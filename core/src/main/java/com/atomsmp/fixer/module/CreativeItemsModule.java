@@ -34,7 +34,7 @@ import java.util.Set;
  * - GameMode değişikliği tracking
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class CreativeItemsModule extends AbstractModule implements Listener {
 

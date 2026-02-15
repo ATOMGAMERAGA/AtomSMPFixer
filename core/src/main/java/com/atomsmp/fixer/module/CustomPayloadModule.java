@@ -27,7 +27,7 @@ import java.util.Set;
  * - Kanal whitelist/blacklist sistemi
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class CustomPayloadModule extends AbstractModule {
 

@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * - String sanitization
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class SignCrasherModule extends AbstractModule {
 

@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Token tüketildiğinde negatife düşebilir — bu flood tespiti için kullanılır.
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class TokenBucket {
 

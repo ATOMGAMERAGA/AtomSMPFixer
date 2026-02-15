@@ -32,7 +32,7 @@ import java.util.regex.PatternSyntaxException;
  * - Wildcard ve pattern desteği
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class CommandsCrashModule extends AbstractModule implements Listener {
 

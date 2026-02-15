@@ -6,7 +6,7 @@
 
     <groupId>com.atomsmp</groupId>
     <artifactId>AtomSMPFixer-parent</artifactId>
-    <version>3.4.1</version>
+    <version>4.0.0</version>
     <packaging>pom</packaging>
 
     <name>AtomSMPFixer</name>

@@ -25,7 +25,7 @@ import java.util.UUID;
  * - CooldownManager kullanımı
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class BundleDuplicationModule extends AbstractModule {
 

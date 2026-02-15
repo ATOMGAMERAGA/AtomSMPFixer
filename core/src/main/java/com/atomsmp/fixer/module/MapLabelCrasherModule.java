@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
  * - Map meta validasyonu
  *
  * @author AtomSMP
- * @version 3.4.1
+ * @version 4.0.0
  */
 public class MapLabelCrasherModule extends AbstractModule implements Listener {
 
