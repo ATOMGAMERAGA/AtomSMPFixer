@@ -26,10 +26,10 @@ public class AttackModeManager {
     private final int threshold;
     private final int durationSeconds;
 
-    // v2.3 — Verified IPs (players that successfully joined before)
+    // Verified IPs (players that successfully joined before)
     private final Set<String> verifiedIps = ConcurrentHashMap.newKeySet();
 
-    // v2.3 — Action config
+    // Action config
     private boolean actionBlockUnverified;
     private boolean actionTightLimits;
     private double tightLimitMultiplier;
@@ -88,15 +88,15 @@ public class AttackModeManager {
         plugin.getLogger().warning("!!! ATTACK MODE ACTIVATED !!! Connection rate: " + triggerRate + "/sec");
         plugin.getLogManager().warning("System entered ATTACK MODE due to high connection rate.");
 
-        // v2.3 — Execute actions
+        // Execute actions
         executeAttackActions();
 
-        // v2.3 — Discord notification
+        // Discord notification
         if (actionDiscordNotify && plugin.getDiscordWebhookManager() != null) {
             plugin.getDiscordWebhookManager().notifyAttackMode(true, triggerRate);
         }
 
-        // v2.3 — Redis sync
+        // Redis sync
         if (plugin.getRedisManager() != null) {
             plugin.getRedisManager().publish("ATTACK_MODE", "true");
         }
@@ -171,7 +171,7 @@ public class AttackModeManager {
             plugin.getDiscordWebhookManager().notifyAttackMode(false, 0);
         }
 
-        // v2.3 — Redis sync
+        // Redis sync
         if (plugin.getRedisManager() != null) {
             plugin.getRedisManager().publish("ATTACK_MODE", "false");
         }

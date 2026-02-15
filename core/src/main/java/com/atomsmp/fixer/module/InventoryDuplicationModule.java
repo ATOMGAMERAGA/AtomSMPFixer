@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - Duplikasyon exploit onleme
  *
  * @author AtomSMP
- * @version 2.0.1
+ * @version 3.4.1
  */
 public class InventoryDuplicationModule extends AbstractModule implements Listener {
 
@@ -46,6 +46,7 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -56,6 +57,7 @@ public class InventoryDuplicationModule extends AbstractModule implements Listen
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

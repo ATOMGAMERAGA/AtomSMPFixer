@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Havai fişek ve partikül exploit'lerini önler.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class VisualCrasherModule extends AbstractModule implements Listener {
 
@@ -41,6 +41,7 @@ public class VisualCrasherModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         this.maxFireworkEffects = getConfigInt("max-havai-fiseke-efekt", 15);
@@ -73,6 +74,7 @@ public class VisualCrasherModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         if (packetListener != null) {

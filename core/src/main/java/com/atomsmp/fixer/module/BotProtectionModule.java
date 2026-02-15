@@ -46,6 +46,7 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -60,6 +61,7 @@ public class BotProtectionModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         HandlerList.unregisterAll(this);

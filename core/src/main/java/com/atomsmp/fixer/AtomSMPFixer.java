@@ -30,7 +30,7 @@ import com.atomsmp.fixer.web.WebPanel;
  * Gelişmiş exploit düzeltme ve sunucu koruma sistemi
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public final class AtomSMPFixer extends JavaPlugin {
 
@@ -58,16 +58,16 @@ public final class AtomSMPFixer extends JavaPlugin {
     // IP Reputation Manager
     private IPReputationManager reputationManager;
 
-    // v2.3 — Discord Webhook Manager
+    // Discord Webhook Manager
     private DiscordWebhookManager discordWebhookManager;
 
-    // v2.3 — Statistics Manager
+    // Statistics Manager
     private StatisticsManager statisticsManager;
 
-    // v2.3 — Redis Manager (Cross-Server Sync)
+    // Redis Manager (Cross-Server Sync)
     private com.atomsmp.fixer.manager.RedisManager redisManager;
 
-    // v2.3 — Verified Player Cache
+    // Verified Player Cache
     private VerifiedPlayerCache verifiedPlayerCache;
 
     // Listener'lar
@@ -140,22 +140,22 @@ public final class AtomSMPFixer extends JavaPlugin {
     public void onDisable() {
         getLogger().info("AtomSMPFixer kapatılıyor...");
 
-        // v2.3 — Discord Webhook durdur
+        // Discord Webhook durdur
         if (discordWebhookManager != null) {
             discordWebhookManager.stop();
         }
 
-        // v2.3 — Statistics kaydet ve durdur
+        // Statistics kaydet ve durdur
         if (statisticsManager != null) {
             statisticsManager.stop();
         }
 
-        // v2.3 — Redis kapat
+        // Redis kapat
         if (redisManager != null) {
             redisManager.stop();
         }
 
-        // v2.3 — Verified Player Cache kaydet ve durdur
+        // Verified Player Cache kaydet ve durdur
         if (verifiedPlayerCache != null) {
             verifiedPlayerCache.stop();
         }
@@ -185,7 +185,7 @@ public final class AtomSMPFixer extends JavaPlugin {
             PacketEvents.getAPI().terminate();
         }
 
-        // v3.0 — API kapat
+        // API kapat
         AtomSMPFixerAPI.shutdown();
 
         // Storage Provider kapat
@@ -213,19 +213,19 @@ public final class AtomSMPFixer extends JavaPlugin {
         this.logManager = new LogManager(this);
         logManager.start();
         
-        // v2.3 — Discord Webhook Manager
+        // Discord Webhook Manager
         this.discordWebhookManager = new DiscordWebhookManager(this);
         discordWebhookManager.start();
 
-        // v2.3 — Statistics Manager
+        // Statistics Manager
         this.statisticsManager = new StatisticsManager(this);
         statisticsManager.start();
 
-        // v2.3 — Redis Manager
+        // Redis Manager
         this.redisManager = new com.atomsmp.fixer.manager.RedisManager(this);
         redisManager.start();
 
-        // v2.3 — Verified Player Cache
+        // Verified Player Cache
         this.verifiedPlayerCache = new VerifiedPlayerCache(this);
         verifiedPlayerCache.start();
 
@@ -240,7 +240,7 @@ public final class AtomSMPFixer extends JavaPlugin {
                 String pass = configManager.getConfig().getString("database.mysql.password", "");
                 boolean ssl = configManager.getConfig().getBoolean("database.mysql.use-ssl", false);
 
-                MySQLStorageProvider provider = new MySQLStorageProvider(host, port, db, user, pass, ssl);
+                MySQLStorageProvider provider = new MySQLStorageProvider(this, host, port, db, user, pass, ssl);
                 provider.connect();
                 this.storageProvider = provider;
                 getLogger().info("MySQL bağlantısı başarılı.");
@@ -278,7 +278,7 @@ public final class AtomSMPFixer extends JavaPlugin {
             }
         }, 100L, 100L);
 
-        // v3.0 — Public API başlat
+        // Public API başlat
         initializeAPI();
 
         getLogger().info("Tüm manager'lar başlatıldı.");
@@ -347,7 +347,7 @@ public final class AtomSMPFixer extends JavaPlugin {
                 var invModule = moduleManager.getModule(com.atomsmp.fixer.module.InventoryDuplicationModule.class);
                 if (invModule != null) invModule.cleanup();
 
-                // v2.0 — TokenBucket oyuncu verisi temizliği (sync gerekli — Bukkit API kullanıyor)
+                // TokenBucket oyuncu verisi temizliği (sync gerekli — Bukkit API kullanıyor)
                 getServer().getScheduler().runTask(this, () -> {
                     var tokenModule = moduleManager.getModule(com.atomsmp.fixer.module.TokenBucketModule.class);
                     if (tokenModule != null) tokenModule.cleanup();
@@ -405,7 +405,7 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.ContainerCrashModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.ComponentCrashModule(this));
 
-        // v2.0 — Yeni güvenlik modülleri
+        // Yeni güvenlik modülleri
         moduleManager.registerModule(new com.atomsmp.fixer.module.TokenBucketModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.AdvancedPayloadModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.NettyCrashModule(this));
@@ -416,7 +416,7 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.RedstoneLimiterModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.ViewDistanceMaskModule(this));
         
-        // v2.2 — Yeni Gelişmiş Güvenlik Modülleri
+        // Yeni Gelişmiş Güvenlik Modülleri
         moduleManager.registerModule(new com.atomsmp.fixer.module.FallingBlockLimiterModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.ExplosionLimiterModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.MovementSecurityModule(this));
@@ -424,14 +424,14 @@ public final class AtomSMPFixer extends JavaPlugin {
         moduleManager.registerModule(new com.atomsmp.fixer.module.AdvancedChatModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.PistonLimiterModule(this));
 
-        // v2.3 — Rapor Gereksinimleri
+        // Rapor Gereksinimleri
         moduleManager.registerModule(new com.atomsmp.fixer.module.SmartLagModule(this));
         moduleManager.registerModule(new com.atomsmp.fixer.module.DuplicationFixModule(this));
 
-        // v2.3 — Bağlantı Hız Sınırlandırıcı
+        // Bağlantı Hız Sınırlandırıcı
         moduleManager.registerModule(new com.atomsmp.fixer.module.ConnectionThrottleModule(this));
 
-        // v3.2 — Gelişmiş AntiBot Modülü
+        // Gelişmiş AntiBot Modülü
         moduleManager.registerModule(new com.atomsmp.fixer.module.antibot.AntiBotModule(this));
 
         getLogger().info("Toplam " + moduleManager.getTotalModuleCount() + " modül kaydedildi.");
@@ -460,7 +460,7 @@ public final class AtomSMPFixer extends JavaPlugin {
         getLogger().info("║   /_\\| |_ ___ _ __/ __|  \\/  | _ \\     ║");
         getLogger().info("║  / _ \\ _/ _ \\ '  \\__ \\ |\\/| |  _/     ║");
         getLogger().info("║ /_/ \\_\\__\\___/_|_|___|_|  |_|_|       ║");
-        getLogger().info("║          Exploit Fixer v" + getDescription().getVersion() + "          ║");
+        getLogger().info("║          Exploit Fixer v3.4.1           ║");
         getLogger().info("╚════════════════════════════════════════╝");
     }
 

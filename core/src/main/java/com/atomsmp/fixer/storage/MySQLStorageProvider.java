@@ -1,5 +1,6 @@
 package com.atomsmp.fixer.storage;
 
+import com.atomsmp.fixer.AtomSMPFixer;
 import com.atomsmp.fixer.api.storage.IStorageProvider;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -17,9 +18,11 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 public class MySQLStorageProvider implements IStorageProvider {
 
+    private final AtomSMPFixer plugin;
     private final String host;
     private final int port;
     private final String database;
@@ -30,7 +33,8 @@ public class MySQLStorageProvider implements IStorageProvider {
     private HikariDataSource dataSource;
     private final ExecutorService executor;
 
-    public MySQLStorageProvider(String host, int port, String database, String username, String password, boolean useSSL) {
+    public MySQLStorageProvider(AtomSMPFixer plugin, String host, int port, String database, String username, String password, boolean useSSL) {
+        this.plugin = plugin;
         this.host = host;
         this.port = port;
         this.database = database;
@@ -132,7 +136,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                 ps.setString(3, jsonData);
                 ps.executeUpdate();
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
         }, executor);
     }
@@ -151,7 +155,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
             return data;
         }, executor);
@@ -175,7 +179,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                     ps.executeBatch();
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
         }, executor);
     }
@@ -191,7 +195,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                     stats.put(rs.getString("stat_key"), rs.getLong("stat_value"));
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
             return stats;
         }, executor);
@@ -210,7 +214,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                 ps.setLong(5, expiry);
                 ps.executeUpdate();
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
         }, executor);
     }
@@ -223,7 +227,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                 ps.setString(1, ipAddress);
                 ps.executeUpdate();
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
         }, executor);
     }
@@ -239,7 +243,7 @@ public class MySQLStorageProvider implements IStorageProvider {
                     ips.add(rs.getString("ip_address"));
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "MySQL error", e);
             }
             return ips;
         }, executor);

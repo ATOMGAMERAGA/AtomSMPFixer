@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Ortak modül fonksiyonlarını ve alanlarını sağlar
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public abstract class AbstractModule implements IModule {
 
@@ -40,23 +40,39 @@ public abstract class AbstractModule implements IModule {
         this.blockedCount = new AtomicLong(0);
     }
 
-    /**
-     * Modül etkinleştirildiğinde çağrılır
-     * Alt sınıflar bu metodu override ederek kendi başlatma kodlarını ekler
-     */
-    public void onEnable() {
-        this.enabled = true;
-        plugin.getLogManager().info(name + " modülü etkinleştirildi.");
-    }
+        /**
 
-    /**
-     * Modül devre dışı bırakıldığında çağrılır
-     * Alt sınıflar bu metodu override ederek kendi temizleme kodlarını ekler
-     */
-    public void onDisable() {
-        this.enabled = false;
-        plugin.getLogManager().info(name + " modülü devre dışı bırakıldı.");
-    }
+         * Modül etkinleştirildiğinde çağrılır
+
+         * Alt sınıflar bu metodu override ederek kendi başlatma kodlarını ekler
+
+         */
+
+        public void onEnable() {
+
+            this.enabled = true;
+
+            plugin.getLogManager().info(name + " modülü etkinleştirildi.");
+
+        }
+
+    
+
+        /**
+
+         * Modül devre dışı bırakıldığında çağrılır
+
+         * Alt sınıflar bu metodu override ederek kendi temizleme kodlarını ekler
+
+         */
+
+        public void onDisable() {
+
+            this.enabled = false;
+
+            plugin.getLogManager().info(name + " modülü devre dışı bırakıldı.");
+
+        }
 
     /**
      * Modülün aktif olup olmadığını kontrol eder
@@ -124,7 +140,7 @@ public abstract class AbstractModule implements IModule {
      */
     protected long incrementBlockedCount() {
         long count = blockedCount.incrementAndGet();
-        // v2.3 — Statistics recording
+        // Statistics recording
         if (plugin.getStatisticsManager() != null) {
             plugin.getStatisticsManager().recordBlock(name);
         }
@@ -264,11 +280,11 @@ public abstract class AbstractModule implements IModule {
      */
     public void logExploit(@NotNull String playerName, @NotNull String details) {
         plugin.getLogManager().logExploit(playerName, name, details);
-        // v2.3 — Discord webhook notification
+        // Discord webhook notification
         if (plugin.getDiscordWebhookManager() != null) {
             plugin.getDiscordWebhookManager().notifyExploitBlocked(name, playerName, details);
         }
-        // v2.3 — Web panel event recording
+        // Web panel event recording
         if (plugin.getWebPanel() != null) {
             plugin.getWebPanel().recordEvent(name, playerName, details);
         }

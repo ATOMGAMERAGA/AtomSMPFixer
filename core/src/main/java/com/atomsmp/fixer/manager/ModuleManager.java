@@ -7,6 +7,7 @@ import com.atomsmp.fixer.module.AbstractModule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.logging.Level;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  * Tüm exploit düzeltme modüllerini yönetir
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class ModuleManager implements IModuleManager {
 
@@ -100,8 +101,7 @@ public class ModuleManager implements IModuleManager {
                 }
 
             } catch (Exception e) {
-                plugin.getLogger().severe("Modül etkinleştirilirken hata: " + module.getName());
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Modül etkinleştirilirken hata: " + module.getName(), e);
             }
         }
 
@@ -125,8 +125,7 @@ public class ModuleManager implements IModuleManager {
                 plugin.getLogManager().info("Modül devre dışı bırakıldı: " + module.getName());
 
             } catch (Exception e) {
-                plugin.getLogger().severe("Modül devre dışı bırakılırken hata: " + module.getName());
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Modül devre dışı bırakılırken hata: " + module.getName(), e);
             }
         }
 
@@ -154,8 +153,7 @@ public class ModuleManager implements IModuleManager {
             plugin.getLogManager().info("Modül etkinleştirildi: " + moduleName);
             return true;
         } catch (Exception e) {
-            plugin.getLogger().severe("Modül etkinleştirilirken hata: " + moduleName);
-            e.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE, "Modül etkinleştirilirken hata: " + moduleName, e);
             return false;
         }
     }
@@ -181,8 +179,7 @@ public class ModuleManager implements IModuleManager {
             plugin.getLogManager().info("Modül devre dışı bırakıldı: " + moduleName);
             return true;
         } catch (Exception e) {
-            plugin.getLogger().severe("Modül devre dışı bırakılırken hata: " + moduleName);
-            e.printStackTrace();
+            plugin.getLogger().log(Level.SEVERE, "Modül devre dışı bırakılırken hata: " + moduleName, e);
             return false;
         }
     }
@@ -350,8 +347,7 @@ public class ModuleManager implements IModuleManager {
                 }
 
             } catch (Exception e) {
-                plugin.getLogger().severe("Modül yeniden yüklenirken hata: " + module.getName());
-                e.printStackTrace();
+                plugin.getLogger().log(Level.SEVERE, "Modül yeniden yüklenirken hata: " + module.getName(), e);
             }
         }
 

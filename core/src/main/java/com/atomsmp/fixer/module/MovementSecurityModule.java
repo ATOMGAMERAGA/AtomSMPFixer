@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * Geçersiz koordinatları ve aşırı hızlı hareketleri denetler.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class MovementSecurityModule extends AbstractModule implements Listener {
 
@@ -28,6 +28,7 @@ public class MovementSecurityModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         this.maxDistance = getConfigDouble("max-mesafe", 30000000.0);

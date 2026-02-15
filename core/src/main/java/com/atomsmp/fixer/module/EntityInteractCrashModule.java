@@ -30,6 +30,7 @@ public class EntityInteractCrashModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         this.maxDistance = getConfigDouble("max-etkilesim-mesafesi", 6.0);
@@ -71,6 +72,7 @@ public class EntityInteractCrashModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         if (listener != null) com.github.retrooper.packetevents.PacketEvents.getAPI().getEventManager().unregisterListener(listener);

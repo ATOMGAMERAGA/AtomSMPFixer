@@ -23,7 +23,7 @@ import java.util.Map;
  * /atomfix komutu executor sınıfı
  *
  * @author AtomSMP
- * @version 2.4.0
+ * @version 3.4.1
  */
 public class AtomFixCommand implements CommandExecutor {
 

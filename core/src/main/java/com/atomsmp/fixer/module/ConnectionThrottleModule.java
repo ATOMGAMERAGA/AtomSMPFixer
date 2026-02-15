@@ -24,12 +24,14 @@ public class ConnectionThrottleModule extends AbstractModule implements Listener
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         connectionTimes.clear();

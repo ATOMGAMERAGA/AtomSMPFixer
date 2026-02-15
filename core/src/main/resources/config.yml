@@ -1,11 +1,11 @@
 # ╔══════════════════════════════════════════════╗
 # ║         AtomSMPFixer Yapılandırma            ║
 # ║     Exploit Fixer Plugin - Paper 1.21.4      ║
-# ║    v3.3.2 — FP İyileştirmeleri ve Güvenlik   ║
+# ║    v3.4.1 — Bugfix & Cleanup Sprint          ║
 # ╚══════════════════════════════════════════════╝
 
 # Config Versiyonu (Değiştirmeyin)
-config-version: "3.3.2"
+config-version: "3.4.1"
 
 # Genel Ayarlar
 genel:

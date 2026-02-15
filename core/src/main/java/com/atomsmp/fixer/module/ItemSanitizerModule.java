@@ -33,7 +33,7 @@ import java.util.Map;
  * BlockPlaceEvent, PlayerDropItemEvent, InventoryMoveItemEvent (hopper koruması)
  *
  * @author AtomSMP
- * @version 2.0.0
+ * @version 3.4.1
  */
 public class ItemSanitizerModule extends AbstractModule implements Listener {
 
@@ -54,6 +54,7 @@ public class ItemSanitizerModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         loadConfig();
@@ -66,6 +67,7 @@ public class ItemSanitizerModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         HandlerList.unregisterAll(this);

@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
  * - World boundary kontrolü
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class NormalizeCoordinatesModule extends AbstractModule implements Listener {
 
@@ -41,6 +41,7 @@ public class NormalizeCoordinatesModule extends AbstractModule implements Listen
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -51,6 +52,7 @@ public class NormalizeCoordinatesModule extends AbstractModule implements Listen
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

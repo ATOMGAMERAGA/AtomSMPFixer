@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * Unicode crash karakterlerini ve tab-complete spamini engeller.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class AdvancedChatModule extends AbstractModule implements Listener {
 
@@ -35,6 +35,7 @@ public class AdvancedChatModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         this.maxTabRequests = getConfigInt("max-tab-istegi-saniye", 5);

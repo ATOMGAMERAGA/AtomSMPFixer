@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  * - PacketUtils.isSlotValid() kullanımı
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class InvalidSlotModule extends AbstractModule {
 
@@ -43,6 +43,7 @@ public class InvalidSlotModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -62,6 +63,7 @@ public class InvalidSlotModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

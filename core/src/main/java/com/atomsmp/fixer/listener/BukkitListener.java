@@ -27,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  * Oyuncu join/quit ve diğer Bukkit eventlerini işler
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class BukkitListener implements Listener {
 
@@ -60,7 +60,7 @@ public class BukkitListener implements Listener {
 
         String ip = event.getAddress().getHostAddress();
 
-        // v2.3 — Attack mode connection blocking
+        // Attack mode connection blocking
         if (plugin.getAttackModeManager().shouldBlockConnection(ip)) {
             plugin.getLogManager().logBot(event.getName(), ip, "Attack mode: dogrulanmamis IP engellendi");
             event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER,
@@ -69,7 +69,7 @@ public class BukkitListener implements Listener {
             return;
         }
 
-        // v2.3 — Verified player cache: skip checks for verified players
+        // Verified player cache: skip checks for verified players
         VerifiedPlayerCache cache = plugin.getVerifiedPlayerCache();
         if (cache != null && cache.isVerified(event.getName(), ip)) {
             if (cache.shouldSkipIpCheck()) {
@@ -123,12 +123,12 @@ public class BukkitListener implements Listener {
             plugin.getLogManager().debug("Oyuncu katıldı: " + player.getName());
         }
 
-        // v2.3 — Record verified IP (player successfully joined)
+        // Record verified IP (player successfully joined)
         if (player.getAddress() != null) {
             String ip = player.getAddress().getAddress().getHostAddress();
             plugin.getAttackModeManager().recordVerifiedIp(ip);
 
-            // v2.3 — Add to verified player cache
+            // Add to verified player cache
             if (plugin.getVerifiedPlayerCache() != null) {
                 plugin.getVerifiedPlayerCache().addVerified(player.getName(), ip);
             }
@@ -171,7 +171,7 @@ public class BukkitListener implements Listener {
             exploitModule.removePlayerData(player.getUniqueId());
         }
 
-        // v2.0 — Yeni modül temizlikleri
+        // Yeni modül temizlikleri
         TokenBucketModule tokenModule = plugin.getModuleManager().getModule(TokenBucketModule.class);
         if (tokenModule != null) {
             tokenModule.removePlayerData(player.getUniqueId());

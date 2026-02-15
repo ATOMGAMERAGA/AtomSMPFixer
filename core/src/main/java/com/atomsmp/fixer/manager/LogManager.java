@@ -22,7 +22,7 @@ import java.util.logging.Level;
  * Günlük dosyalar oluşturur ve eski logları temizler
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class LogManager {
 

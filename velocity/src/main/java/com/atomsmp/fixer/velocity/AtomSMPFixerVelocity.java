@@ -14,7 +14,7 @@ import java.nio.file.Path;
 @Plugin(
         id = "atomsmpfixer-velocity",
         name = "AtomSMPFixer Velocity",
-        version = "3.0.0",
+        version = "3.4.1",
         description = "Velocity proxy module for AtomSMPFixer",
         authors = {"AtomSMP"}
 )
@@ -75,7 +75,7 @@ public class AtomSMPFixerVelocity {
             // Wait, I can add Configurate or just use simple logic.
             
             // To be safe and dependency-free for now:
-            config = new YamlConfiguration(configPath);
+            config = new YamlConfiguration(configPath, logger);
             config.load();
             
         } catch (Exception e) {
@@ -90,10 +90,12 @@ public class AtomSMPFixerVelocity {
     // Simple Configuration helper class to avoid external dependencies for this basic prototype
     public static class YamlConfiguration {
         private final Path path;
+        private final Logger logger;
         private final java.util.Map<String, Object> values = new java.util.HashMap<>();
 
-        public YamlConfiguration(Path path) {
+        public YamlConfiguration(Path path, Logger logger) {
             this.path = path;
+            this.logger = logger;
         }
 
         public void load() {
@@ -113,7 +115,7 @@ public class AtomSMPFixerVelocity {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("YamlConfiguration load error", e);
             }
         }
 

@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
  * - Map meta validasyonu
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class MapLabelCrasherModule extends AbstractModule implements Listener {
 
@@ -42,6 +42,7 @@ public class MapLabelCrasherModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -55,6 +56,7 @@ public class MapLabelCrasherModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

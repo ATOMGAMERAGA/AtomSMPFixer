@@ -69,7 +69,7 @@ public class PanicCommand implements CommandExecutor {
         sender.sendMessage(ChatColor.RED + "Panik modu tamamlandı. " + ChatColor.YELLOW + count + ChatColor.RED + " oyuncu yasaklandı.");
         sender.sendMessage(ChatColor.GRAY + "Yasaklananlar '" + logFile + "' dosyasına kaydedildi.");
 
-        // v2.3 — Discord webhook notification
+        // Discord webhook notification
         if (plugin.getDiscordWebhookManager() != null) {
             plugin.getDiscordWebhookManager().notifyPanic(sender.getName(), count);
         }

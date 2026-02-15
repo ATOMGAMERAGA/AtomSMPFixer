@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  * Optimizasyon: Math.sqrt KULLANILMAZ — squared distance karşılaştırması
  *
  * @author AtomSMP
- * @version 2.0.0
+ * @version 3.4.1
  */
 public class ViewDistanceMaskModule extends AbstractModule {
 
@@ -42,6 +42,7 @@ public class ViewDistanceMaskModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -57,6 +58,7 @@ public class ViewDistanceMaskModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

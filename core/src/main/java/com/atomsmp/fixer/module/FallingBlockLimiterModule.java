@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Çok fazla düşen bloğun sunucuyu yormasını önler.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class FallingBlockLimiterModule extends AbstractModule implements Listener {
 
@@ -32,6 +32,7 @@ public class FallingBlockLimiterModule extends AbstractModule implements Listene
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         this.maxPerChunk = getConfigInt("max-dusen-blok-chunk", 64);

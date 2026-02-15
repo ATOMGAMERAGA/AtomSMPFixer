@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
  * korumalarını sağlar.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class DuplicationFixModule extends AbstractModule implements Listener {
 
@@ -33,12 +33,14 @@ public class DuplicationFixModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         HandlerList.unregisterAll(this);

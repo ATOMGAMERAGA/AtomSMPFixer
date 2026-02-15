@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  * - Duplikasyon exploit önleme
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class MuleDuplicationModule extends AbstractModule implements Listener {
 
@@ -37,6 +37,7 @@ public class MuleDuplicationModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -47,6 +48,7 @@ public class MuleDuplicationModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

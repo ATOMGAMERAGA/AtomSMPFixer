@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Kristal patlamalarını görmezden gelir.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class ExplosionLimiterModule extends AbstractModule implements Listener {
 
@@ -32,6 +32,7 @@ public class ExplosionLimiterModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         this.maxPerSecond = getConfigInt("max-patlama-saniye", 10);
@@ -44,6 +45,7 @@ public class ExplosionLimiterModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         if (taskId != -1) {

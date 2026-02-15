@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * "decoder" handler'ından SONRA handler eklenir.
  *
  * @author AtomSMP
- * @version 2.0.0
+ * @version 3.4.1
  */
 public class NettyCrashModule extends AbstractModule implements Listener {
 
@@ -59,6 +59,7 @@ public class NettyCrashModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         loadConfig();
@@ -84,6 +85,7 @@ public class NettyCrashModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

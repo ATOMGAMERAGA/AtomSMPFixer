@@ -49,7 +49,7 @@ import com.atomsmp.fixer.api.IReputationService;
  *   - Manuel IP ekleme/kaldırma komutları
  *
  * @author AtomSMP
- * @version 2.4.0
+ * @version 3.4.1
  */
 public class IPReputationManager implements IReputationService {
 

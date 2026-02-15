@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Aşırı chunk yüklemesi ve entity overflow exploit'lerini önler.
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class ChunkCrashModule extends AbstractModule implements Listener {
 
@@ -37,6 +37,7 @@ public class ChunkCrashModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         loadConfig();
@@ -47,6 +48,7 @@ public class ChunkCrashModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         org.bukkit.event.world.ChunkLoadEvent.getHandlerList().unregister(this);

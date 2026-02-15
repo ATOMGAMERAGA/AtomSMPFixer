@@ -22,6 +22,7 @@ public class ContainerCrashModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
         listener = new PacketListenerAbstract(PacketListenerPriority.NORMAL) {
@@ -56,6 +57,7 @@ public class ContainerCrashModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         if (listener != null) com.github.retrooper.packetevents.PacketEvents.getAPI().getEventManager().unregisterListener(listener);

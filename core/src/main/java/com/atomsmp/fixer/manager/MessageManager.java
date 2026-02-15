@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Renkli, gradient ve modern mesajlar için Paper Adventure API desteği
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class MessageManager {
 

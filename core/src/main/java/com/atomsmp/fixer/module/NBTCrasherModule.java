@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
  * - Creative ve normal inventory kontrolü
  *
  * @author AtomSMP
- * @version 1.2.0
+ * @version 3.4.1
  */
 public class NBTCrasherModule extends AbstractModule {
 
@@ -48,6 +48,7 @@ public class NBTCrasherModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -66,6 +67,7 @@ public class NBTCrasherModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
         debug("Modül devre dışı bırakıldı.");

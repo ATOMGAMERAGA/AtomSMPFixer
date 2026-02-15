@@ -26,7 +26,7 @@ import java.util.List;
  * - Unicode ve JSON sanitasyonu
  *
  * @author AtomSMP
- * @version 1.1.0
+ * @version 3.4.1
  */
 public class BookCrasherModule extends AbstractModule {
 
@@ -48,6 +48,7 @@ public class BookCrasherModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -71,6 +72,7 @@ public class BookCrasherModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

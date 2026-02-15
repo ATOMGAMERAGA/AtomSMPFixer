@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - IP ve Socket kanalı doğrulaması
  *
  * @author AtomSMP
- * @version 1.1.0
+ * @version 3.4.1
  */
 public class OfflinePacketModule extends AbstractModule {
 
@@ -54,6 +54,7 @@ public class OfflinePacketModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -84,6 +85,7 @@ public class OfflinePacketModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * /atomfix komutu için tab completion sınıfı
  *
  * @author AtomSMP
- * @version 2.4.0
+ * @version 3.4.1
  */
 public class AtomFixTabCompleter implements TabCompleter {
 

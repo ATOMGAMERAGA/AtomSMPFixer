@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  * - Zararlı kitap içeriklerinin engellenmesi
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class TooManyBooksModule extends AbstractModule implements Listener {
 
@@ -48,6 +48,7 @@ public class TooManyBooksModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -64,6 +65,7 @@ public class TooManyBooksModule extends AbstractModule implements Listener {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 

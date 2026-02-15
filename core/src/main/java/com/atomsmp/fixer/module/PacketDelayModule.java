@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * - PlayerData kullanarak oyuncu bazlı tracking
  *
  * @author AtomSMP
- * @version 1.0.0
+ * @version 3.4.1
  */
 public class PacketDelayModule extends AbstractModule {
 
@@ -51,6 +51,7 @@ public class PacketDelayModule extends AbstractModule {
     }
 
     @Override
+
     public void onEnable() {
         super.onEnable();
 
@@ -73,6 +74,7 @@ public class PacketDelayModule extends AbstractModule {
     }
 
     @Override
+
     public void onDisable() {
         super.onDisable();
 
